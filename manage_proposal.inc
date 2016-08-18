@@ -288,25 +288,31 @@ function proposal_approval_form($form,&$form_state)
   /* get book preference */
   $preference_rows = array();
 
- // $preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = :proposal_id ORDER BY pref_number ASC", array(':proposal_id' => $proposal_id));
-  $preference_q = db_query(" SELECT * FROM list_of_category loc
+  $preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = :proposal_id ORDER BY pref_number ASC", array(':proposal_id' => $proposal_id));
+/*  $preference_q = db_query(" SELECT * FROM list_of_category loc
                 JOIN textbook_companion_preference tcp ON loc.category_id = tcp.category
                 WHERE proposal_id = :proposal_id ORDER BY pref_number ASC
 ",array(':proposal_id' => $proposal_id));
+//var_dump($preference_q->fetchObject());die;
 	/*$query = db_select('textbook_companion_preference');
 	$query->fields('textbook_companion_preference');
 	$query->condition('proposal_id', $proposal_id);
 	$query->orderBy('pref_number', 'ASC');
 	$preference_q = $query->execute();*/
-
-
+/*if ($preference_q->fetchObject()== NULL){
+   $preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = :proposal_id ORDER BY pref_number ASC", array(':proposal_id' => $proposal_id));
+}*/
   while ($preference_data = $preference_q->fetchObject())
   {
-    
+       if($preference_data->category){
   	$category_data = _tbc_list_of_category($preference_data->category);
+       
   	foreach ($category_data as $cat){  	
     $preference_rows[$preference_data->id] = $preference_data->book . ' (Written by ' . $preference_data->author . ')</br>[Category: '.$cat.']</br>';
     }
+   } else{
+ $preference_rows[$preference_data->id] = $preference_data->book . ' (Written by ' . $preference_data->author . ')</br>[Category: Not available]</br>';
+}
   }
    if($row->proposal_type == 1){
     $form['book_preference'] = array(

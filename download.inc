@@ -273,14 +273,16 @@ $zip->addFile($root_path . $dependency_file_data->filepath, $BK_PATH . $CH_PATH 
   {
     /* download zip file */
     global $user;
-    if($user->uid){
+    
+//temprary disabled to check large file download. 
+/*if($user->uid){
         header('Content-Type: application/zip');
         header('Content-disposition: attachment; filename="' . str_replace(' ','_',($book_data->book)) . '.zip"');
         header('Content-Length: ' . filesize($zip_filename));
         ob_clean();
         readfile($zip_filename);
         unlink($zip_filename);
-    }else{
+    }else{*/
         header('Content-Type: application/zip');
         header('Content-disposition: attachment; filename="' . str_replace(' ','_',($book_data->book)) . '.zip"');
         header('Content-Length: ' . filesize($zip_filename));
@@ -292,7 +294,7 @@ $zip->addFile($root_path . $dependency_file_data->filepath, $BK_PATH . $CH_PATH 
         flush();
         readfile($zip_filename);
         unlink($zip_filename);
-    }
+  /*  }*/
   } else {
     drupal_set_message("There are no examples in this book to download", 'error');
     drupal_goto('textbook_run');

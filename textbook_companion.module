@@ -3284,7 +3284,7 @@ function book_proposal_nonaicte_form($form,&$form_state)
     '#title' => t('Pincode'),
     '#size' => 30,
     '#maxlength' => 6,
-    '#required' => False,
+    '#required' => TRUE,
     '#attributes' =>array('placeholder' =>'Enter pincode....'),
   );  
   $form['faculty'] = array(
@@ -3532,6 +3532,12 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
          
  
  }
+
+if (strlen(trim($form_state['values']['reference'])) >= 1) {
+		if (strlen(trim($form_state['values']['reference'])) >9000) {
+			 form_set_error('reference', t('Reference should be maximum of 9000 characters'));
+		}
+	    }
 
 
   if (isset($_FILES['files']))
