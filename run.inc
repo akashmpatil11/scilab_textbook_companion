@@ -1,22 +1,20 @@
 <?php
 function textbook_companion_run_form($form, &$form_state)
 {
+	$url_category_id = (int) arg(3);
+	$url_subcategory_id = (int) arg(2);
 	$url_book_pref_id = (int) arg(1);
-	if ($url_book_pref_id)
+	if ($url_book_pref_id!= NULL && $url_subcategory_id!= NULL && $url_category_id!= NULL)
 	{
-		$query = db_select('textbook_companion_preference');
-		$query->fields('textbook_companion_preference', array(
-			'category'
-		));
-		$query->condition('id', $url_book_pref_id);
-		$result = $query->execute()->fetchObject();
-		$category_default_value = $result->category;
+		$category_default_value = $url_category_id;
+		$subcategory_default_value = $url_subcategory_id;
 	} //$url_book_pref_id
 	else
 	{
 		$category_default_value = 0;
+		$subcategory_default_value = 0;
 	}
-	if ($url_book_pref_id)
+	if ($url_book_pref_id && $url_subcategory_id && $url_category_id)
 	{
 		$form['category'] = array(
 			'#type' => 'select',
@@ -24,15 +22,34 @@ function textbook_companion_run_form($form, &$form_state)
 			'#options' => _list_of_category(),
 			'#default_value' => $category_default_value,
 			'#ajax' => array(
-				'callback' => 'ajax_book_list_callback'
+				'callback' => 'ajax_subcategory_list_callback'
 			),
 			'#validated' => TRUE
+		);
+		$form['subcategory'] = array(
+			'#type' => 'select',
+			'#title' => t('Sub Category'),
+			'#options' => _list_of_subcategory($category_default_value),
+			'#default_value' => $subcategory_default_value,
+			'#ajax' => array(
+				'callback' => 'ajax_book_list_callback'
+			),
+			'#prefix' => '<div id="ajax-subcategory-list-replace">',
+			'#suffix' => '</div>',
+			'#validated' => TRUE,
+			'#states' => array(
+				'invisible' => array(
+					':input[name="category"]' => array(
+						'value' => 0
+					)
+				)
+			)
 		);
 		$book_default_value = $url_book_pref_id;
 		$form['book'] = array(
 			'#type' => 'select',
 			'#title' => t('Title of the book'),
-			'#options' => _list_of_books($category_default_value),
+			'#options' => _list_of_books($category_default_value,$subcategory_default_value),
 			'#default_value' => $book_default_value,
 			'#prefix' => '<div id="ajax-book-list-replace">',
 			'#suffix' => '</div>',
@@ -42,7 +59,7 @@ function textbook_companion_run_form($form, &$form_state)
 			'#validated' => TRUE,
 			'#states' => array(
 				'invisible' => array(
-					':input[name="category"]' => array(
+					':input[name="subcategory"]' => array(
 						'value' => 0
 					)
 				)
@@ -125,21 +142,41 @@ function textbook_companion_run_form($form, &$form_state)
 			'#options' => _list_of_category(),
 			'#default_value' => $category_default_value,
 			'#ajax' => array(
-				'callback' => 'ajax_book_list_callback'
+				'callback' => 'ajax_subcategory_list_callback'
 			),
 			'#validated' => TRUE
+		);
+		//var_dump(_list_of_subcategory($category_default_value));
+		$form['subcategory'] = array(
+			'#type' => 'select',
+			'#title' => t('Sub Category'),
+			'#options' => _list_of_subcategory($category_default_value),
+			'#default_value' => $subcategory_default_value,
+			'#ajax' => array(
+				'callback' => 'ajax_book_list_callback'
+			),
+			'#prefix' => '<div id="ajax-subcategory-list-replace">',
+			'#suffix' => '</div>',
+			'#validated' => TRUE,
+			'#states' => array(
+				'invisible' => array(
+					':input[name="category"]' => array(
+						'value' => 0
+					)
+				)
+			)
 		);
 		$form['book'] = array(
 			'#type' => 'select',
 			'#title' => t('Title of the book'),
-			'#options' => _list_of_books($category_default_value),
+			'#options' => _list_of_books($category_default_value,$subcategory_default_value),
 			//'#default_value' => isset($form_state['values']['book']) ? $form_state['values']['book'] : 0,
-			'#prefix' => '<div id="ajax-book-list-replace">',
-			'#suffix' => '</div>',
 			'#ajax' => array(
 				'callback' => 'ajax_chapter_list_callback'
 			),
 			'#validated' => TRUE,
+			'#prefix' => '<div id="ajax-book-list-replace">',
+			'#suffix' => '</div>',
 			'#states' => array(
 				'invisible' => array(
 					':input[name="category"]' => array(
@@ -218,10 +255,12 @@ function textbook_companion_run_form($form, &$form_state)
 function ajax_book_list_callback($form, $form_state)
 {
 	$category_default_value = $form_state['values']['category'];
+	$subcategory_default_value = $form_state['values']['subcategory'];
 	if ($category_default_value > 0)
 	{
-		$form['book']['#options'] = _list_of_books($category_default_value);
+		$form['book']['#options'] = _list_of_books($category_default_value,$subcategory_default_value);
 		$commands[] = ajax_command_replace("#ajax-book-list-replace", drupal_render($form['book']));
+		//$commands[] = ajax_command_html("#ajax-subcategory-list-replace", '');
 		$commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
 		$commands[] = ajax_command_html("#ajax-example-list-replace", '');
 	} //$category_default_value > 0
@@ -230,6 +269,7 @@ function ajax_book_list_callback($form, $form_state)
 		$form['book']['#options'] = _list_of_books();
 		$commands[] = ajax_command_replace("#ajax-book-list-replace", drupal_render($form['book']));
 		$commands[] = ajax_command_html("#ajax-book-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-subcategory-list-replace", '');
 		$commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
 		$commands[] = ajax_command_html("#ajax-example-list-replace", '');
 		$commands[] = ajax_command_html("#ajax-book-details-replace", '');
@@ -245,6 +285,38 @@ function ajax_book_list_callback($form, $form_state)
 	);
 }
 /*************************************************************************/
+/********************* Ajax callback ***************************/
+function ajax_subcategory_list_callback($form, $form_state)
+{
+	$category_default_value = $form_state['values']['category'];
+	if ($category_default_value > 0)
+	{
+		$form['subcategory']['#options'] = _list_of_subcategory($category_default_value);
+		$commands[] = ajax_command_replace("#ajax-subcategory-list-replace", drupal_render($form['subcategory']));
+		$commands[] = ajax_command_html("#ajax-book-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-example-list-replace", '');
+	} //$category_default_value > 0
+	else
+	{
+		//$form['subcategory']['#options'] = _list_of_subcategory();
+		//$commands[] = ajax_command_replace("#ajax-subcategory-list-replace", drupal_render($form['subcategory']));
+		$commands[] = ajax_command_html("#ajax-subcategory-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-book-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-example-list-replace", '');
+		$commands[] = ajax_command_html("#ajax-book-details-replace", '');
+		$commands[] = ajax_command_html("#ajax-download-book-replace", '');
+		$commands[] = ajax_command_html("#ajax-download-book-pdf-replace", '');
+		$commands[] = ajax_command_html("#ajax-download-chapter-replace", '');
+		$commands[] = ajax_command_html("#ajax-download-example-code-replace", '');
+		$commands[] = ajax_command_html("#ajax-download-example-files-replace", '');
+	}
+	return array(
+		'#type' => 'ajax',
+		'#commands' => $commands
+	);
+}
 function ajax_chapter_list_callback($form, $form_state)
 {
 	$book_list_default_value = $form_state['values']['book'];
@@ -415,7 +487,7 @@ function bootstrap_table_format($headers, $rows)
 	return $table;
 }
 /***********************************************************************************/
-function _list_of_category()
+/*function _list_of_category()
 {
 	$category_titles = array(
 		0 => 'Please select category ...',
@@ -434,30 +506,78 @@ function _list_of_category()
 		13 => 'Others'
 	);
 	return $category_titles;
+}*/
+function _list_of_category($category_id = NULL)
+{
+	$category ="";
+	$category[0] .= "Please select";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('category_id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category[$category_list_data->category_id] .= $category_list_data->maincategory;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
 }
-function _list_of_books($category_default_value)
+function _list_of_subcategory($category_id = NULL)
+{
+
+	$subcategory = "";
+	$subcategory[0] .= "Please select";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_subcategory');
+		$query->fields('list_of_subcategory');
+		$query->condition('maincategory_id', $category_id);
+		$query->orderBy('subcategory_id', 'ASC');
+		$subcategory_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_subcategory');
+		$query->fields('list_of_subcategory');
+		$query->condition('maincategory_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$subcategory_list = $query->execute();
+	}
+	while ($subcategory_list_data = $subcategory_list->fetchObject())
+	{
+		$subcategory[$subcategory_list_data->subcategory_id] .= $subcategory_list_data->subcategory;
+	} //$category_list_data = $category_list->fetchObject()
+	return $subcategory;
+}
+function _list_of_books($category_default_value,$subcategory_default_value)
 {
 	$book_titles = array(
 		0 => 'Please select ...'
 	);
-	// $book_titles_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE category=".$category_default_value." AND approval_status = 1 OR approval_status = 3 ORDER BY book ASC");
-	// $book_titles_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE category=".$category_default_value." AND approval_status = 1 AND proposal_id IN (SELECT id FROM textbook_companion_proposal WHERE proposal_status=3) ORDER BY book ASC");
-	// var_dump('ok= '. $category_default_value);
-	$query = db_select('textbook_companion_preference');
-	$query->fields('textbook_companion_preference');
-	$query->condition('category', $category_default_value);
-	$query->condition('approval_status', 1);
-	$subquery = db_select('textbook_companion_proposal');
-	$subquery->fields('textbook_companion_proposal', array(
-		'id'
-	));
-	$subquery->condition('proposal_status', 3);
-	$query->condition('proposal_id', $subquery, 'IN');
-	$query->orderBy('book', 'ASC');
-	$book_titles_q = $query->execute();
+	//var_dump($category_default_value,$subcategory_default_value);
+	$book_titles_q = db_query("SELECT DISTINCT (tcbm.sub_category), los.subcategory, loc.category_id,loc.maincategory,
+      pe.book as book, pe.author as author, pe.publisher as publisher, pe.year as year, pe.id as pe_id,
+      po.approval_date as approval_date
+      FROM textbook_companion_preference pe
+      LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
+      LEFT JOIN textbook_companion_book_main_subcategories tcbm ON pe.id = tcbm.pref_id
+      LEFT JOIN list_of_category loc ON tcbm.main_category = loc.category_id
+      LEFT JOIN list_of_subcategory los ON tcbm.sub_category = los.subcategory_id
+      WHERE po.proposal_status = 3 AND pe.approval_status = 1 AND pe.category>0
+      AND pe.id = tcbm.pref_id AND tcbm.sub_category= :sub_category AND tcbm.main_category = :main_category",array(":sub_category"=>$subcategory_default_value, "main_category" => $category_default_value));
 	while ($book_titles_data = $book_titles_q->fetchObject())
 	{
-		$book_titles[$book_titles_data->id] = $book_titles_data->book . ' (Written by ' . $book_titles_data->author . ')';
+		$book_titles[$book_titles_data->pe_id] = $book_titles_data->book . ' (Written by ' . $book_titles_data->author . ')';
 	} //$book_titles_data = $book_titles_q->fetchObject()
 	return $book_titles;
 }
