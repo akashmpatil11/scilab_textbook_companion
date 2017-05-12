@@ -119,7 +119,7 @@ function _textbook_companion_list_of_new_category_display($category_id = NULL)
 				if ($sub_category_list_data->subcategory == $preference_data->subcategory && $sub_category_list_data->maincategory_id == $preference_data->category_id)
 				{
 					$category .= "<li>";
-					$category .= l($preference_data->book . " by " . $preference_data->author . ", " . $preference_data->publisher . ", " . $preference_data->year, 'textbook_run/' . $preference_data->pe_id);
+					$category .= l($preference_data->book . " by " . $preference_data->author . ", " . $preference_data->publisher . ", " . $preference_data->year, 'textbook_run/' . $preference_data->pe_id.'/'. $preference_data->sub_category .'/'. $preference_data->category_id);
 					$category .= "</li>";
 				} //$sub_category_list_data->subcategory == $preference_data->subcategory && $sub_category_list_data->maincategory_id == $preference_data->category_id
 			} //$preference_data = $preference_q->fetchObject()
@@ -150,5 +150,127 @@ function tbc_completed_books_all()
 		$output .= "<div id=$i>" . _textbook_companion_list_of_new_category_display($i) . "</div><br>";
 	} //$i = 1; $i <= $row_category_count; $i++
 	$output .= "</h4></ol>";
+	return $output;
+}
+function tbc_completed_books_display_new_category_all()
+{
+	$category_id = NULL;
+	$output = "";
+	$tbc_books_display_new_category_form = drupal_get_form("tbc_books_display_new_category_form");
+	$output .= drupal_render($tbc_books_display_new_category_form);
+	return $output;
+}
+function tbc_books_display_new_category_form($form, &$form_state){
+	$category_default_value = 0;
+	$form['category'] = array(
+			'#type' => 'select',
+			'#title' => t('Category'),
+			'#options' => _list_of_display_category(),
+			'#default_value' => $category_default_value,
+			'#ajax' => array(
+				'callback' => 'ajax_display_all_book_list_callback'
+			),
+			'#validated' => TRUE
+		);
+	$form['book'] = array(
+			'#type' => 'item',
+			'#markup' => '<div id="ajax-book-list-replace">'._list_of_all_completed_books().'</div>',
+		);
+	return $form;
+}
+function _list_of_display_category($category_id = NULL)
+{
+	$category ="";
+	$category[0] .= "All";
+	if ($category_id == NULL)
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->orderBy('category_id', 'ASC');
+		$category_list = $query->execute();
+	} //$category_id == NULL
+	else
+	{
+		$query = db_select('list_of_category');
+		$query->fields('list_of_category');
+		$query->condition('category_id', $category_id);
+		$query->orderBy('id', 'ASC');
+		$category_list = $query->execute();
+	}
+	while ($category_list_data = $category_list->fetchObject())
+	{
+		$category[$category_list_data->category_id] .= $category_list_data->maincategory;
+	} //$category_list_data = $category_list->fetchObject()
+	return $category;
+}
+/********************* Ajax callback ***************************/
+function ajax_display_all_book_list_callback($form, $form_state)
+{
+	$category_default_value = $form_state['values']['category'];
+	if ($category_default_value > 0)
+	{
+		$form['book']['#markup'] = _list_of_all_completed_books($category_default_value);
+		$commands[] = ajax_command_replace("#ajax-book-list-replace", drupal_render($form['book']));
+	} //$category_default_value > 0
+	else
+	{
+		$form['book']['#markup'] = _list_of_all_completed_books();
+		$commands[] = ajax_command_replace("#ajax-book-list-replace", drupal_render($form['book']));
+		//$commands[] = ajax_command_html("#ajax-book-list-replace", '');
+	}
+	return array(
+		'#type' => 'ajax',
+		'#commands' => $commands
+	);
+}
+/*************************************************************************/
+function _list_of_all_completed_books($category_default_value)
+{
+	$output = "";
+	//get the book count
+	$result = db_query("SELECT COUNT( pe.book ) AS book_count FROM textbook_companion_preference pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
+	$row = $result->fetchObject();
+	$book_count = $row->book_count;
+	$i = 1;
+	/* get preference */
+	if($category_default_value<=0){
+	$preference_q = db_query("SELECT pe.id as pref_id, pe.book as book, pe.author as author,pe.category as existing_category, pe.publisher as publisher, pe.year as year, pe.id as pe_id, po.approval_date as approval_date
+  FROM textbook_companion_preference pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
+  WHERE po.proposal_status = 3 AND pe.approval_status = 1 AND pe.category>0 ORDER BY pe.book ASC");
+  }else{
+	$preference_q = db_query("SELECT DISTINCT (loc.category_id),loc.maincategory,
+      pe.book as book, pe.author as author, pe.publisher as publisher, pe.year as year, pe.id as pe_id,
+      po.approval_date as approval_date
+      FROM textbook_companion_preference pe
+      LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
+      LEFT JOIN textbook_companion_book_main_subcategories tcbm ON pe.id = tcbm.pref_id
+      LEFT JOIN list_of_category loc ON tcbm.main_category = loc.category_id
+      WHERE po.proposal_status = 3 AND pe.approval_status = 1 AND pe.category>0
+      AND pe.id = tcbm.pref_id AND loc.category_id= :category_id", array("category_id" => $category_default_value )
+      );
+  }
+	while ($preference_data = $preference_q->fetchObject())
+	{
+		$proposal_rows[] = array(
+			$i,
+			"{$preference_data->book} <br> <em>by {$preference_data->author}</em>"
+		);
+		$i++;
+	} //$proposal_data = $proposal_q->fetchObject()
+	/* check if there are any pending proposals */
+	if (!$proposal_rows)
+	{
+		drupal_set_message(t('There are no proposals.'), 'status');
+		return '';
+	} //!$proposal_rows
+	$output .= "Book count with category: " . $book_count;
+	$proposal_header = array(
+		'No.',
+		'Title of the Book',
+	);
+	$output .= theme('table', array(
+		'header' => $proposal_header,
+		'rows' => $proposal_rows
+	));
 	return $output;
 }

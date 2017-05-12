@@ -27,6 +27,15 @@ function textbook_companion_menu()
 		'type' => MENU_LOCAL_TASK,
 		'file' => 'display_books.inc'
 	);
+	$items['Completed_Books_1'] = array(
+		'title' => 'Completed Books',
+		'page callback' => 'tbc_completed_books_display_new_category_all',
+		'access arguments' => array(
+			'display books in progress'
+		),
+		'type' => MENU_LOCAL_TASK,
+		'file' => 'display_books.inc'
+	);
 	$items['proposal'] = array(
 		'title' => 'Book Proposal Form',
 		'description' => 'Book Proposal Form.',
