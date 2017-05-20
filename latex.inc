@@ -168,6 +168,8 @@ function _latex_generate_files($preference_id, $full_book = FALSE)
 	if (_latex_run_script($book_filename, $contributor_filename, $latex_filename, $latex_dep_filename, $pdf_filename))
 	{
 		/* download PDF file */
+		//var_dump(filesize($dir_path . $pdf_filename));
+		//var_dump($dir_path . $pdf_filename);die;
 		if (filesize($dir_path . $pdf_filename) == TRUE)
 		{
 			ob_clean();
@@ -189,13 +191,13 @@ function _latex_generate_files($preference_id, $full_book = FALSE)
 		} //filesize($dir_path . $pdf_filename) == TRUE
 		else
 		{
-			drupal_set_message("Error occurred when generating the PDF version of the Book.", 'error');
-			drupal_goto('textbook_run/' . $preference_data->id);
+			drupal_set_message(t("Error occurred when generating the PDF version of the Book."), 'error');
+			//drupal_goto('textbook_run/' . $preference_data->id);
 		}
 	} //_latex_run_script($book_filename, $contributor_filename, $latex_filename, $latex_dep_filename, $pdf_filename)
 	else
 	{
-		drupal_set_message("Error occurred when generating the PDF version of the Book.", 'error');
+		drupal_set_message(t("Error occurred when generating the PDF version of the Book."), 'error');
 	}
 	/*********************** DELETING TEMPORARY FILES ***************************/
 	/* regenerate book if full book selected */
@@ -213,14 +215,9 @@ function _latex_run_script($book_filename, $contributor_filename, $latex_filenam
 	$ret = 0;
 	chdir("uploads");
 	chdir("latex");
-	//var_dump($book_filename . " " . $contributor_filename . " " . $latex_filename . " " . $latex_dep_filename);die;
 	$sh_command = "./pdf_creator.sh " . $book_filename . " " . $contributor_filename . " " . $latex_filename . " " . $latex_dep_filename . " " . $pdf_filename;
+
 	exec($sh_command);
-	// var_dump(exec($sh_command));die; 
-	//exec("mv TEX_final.pdf " , $pdf_filename);
-	// rename('TEX_final.pdf', $pdf_filename);
-	//var_dump($pdf_filename);die;
-	if ($ret == 0)
 	{
 		return TRUE;
 	} //$ret == 0
