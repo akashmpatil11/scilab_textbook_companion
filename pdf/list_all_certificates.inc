@@ -2,7 +2,7 @@
 function _list_all_certificates()
 {
 	global $user;
-	$query_id = db_query("SELECT id FROM textbook_companion_proposal WHERE proposal_status=3 AND uid= :uid", array(
+	$query_id = db_query("SELECT id FROM {textbook_companion_proposal} WHERE proposal_status=3 AND uid= :uid", array(
 		':uid' => $user->uid
 	));
 	$exist_id = $query_id->fetchObject();
@@ -18,7 +18,7 @@ function _list_all_certificates()
 			$search_rows = array();
 			global $output;
 			$output = '';
-			$query3 = db_query("SELECT prop.id,pref.isbn,pref.book,pref.author FROM textbook_companion_proposal as prop,textbook_companion_preference as pref WHERE prop.proposal_status=3 AND pref.approval_status=1 AND pref.proposal_id=prop.id AND prop.uid= :uid", array(
+			$query3 = db_query("SELECT prop.id,pref.isbn,pref.book,pref.author FROM {textbook_companion_proposal} as prop,textbook_companion_preference as pref WHERE prop.proposal_status=3 AND pref.approval_status=1 AND pref.proposal_id=prop.id AND prop.uid= :uid", array(
 				':uid' => $user->uid
 			));
 			while ($search_data3 = $query3->fetchObject())
