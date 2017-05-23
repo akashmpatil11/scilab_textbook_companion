@@ -1,10 +1,9 @@
 <?php
-// $Id$
-/**
+/*
+ * @file
  * Implementation of hook_install().
  */
-function textbook_companion_install()
-{
+function textbook_companion_install(){
 	// Create tables.
 	drupal_install_schema('textbook_companion');
 	variable_set('textbook_companion_emails', '');

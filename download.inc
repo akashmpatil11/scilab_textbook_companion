@@ -232,7 +232,7 @@ function textbook_companion_download_book()
 				if ($dependency_file_data)
 					$zip->addFile($root_path . $dependency_file_data->filepath, $BK_PATH . $CH_PATH . $EX_PATH . 'DEPENDENCIES/' . $dependency_file_data->filename);
 			} //$example_dependency_files_row = $example_dependency_files_q->fetchObject()
-			$query = "SELECT * FROM textbook_companion_dependency_files WHERE preference_id = :preference_id";
+			$query = "SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = :preference_id";
 			$args = array(
 				':preference_id' => $book_id
 			);

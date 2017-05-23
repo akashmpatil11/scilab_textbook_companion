@@ -9,7 +9,7 @@ function tbc_books_in_progress_all()
 	$category_list = $query->execute();
 	$query = "
   SELECT po.creation_date, pe.book as book, pe.author as author, pe.publisher as publisher,pe.edition as edition, pe.isbn as isbn, pe.year as year, pe.id as pe_id, loc.category_name as category, loc.category_id as cat_id
-FROM textbook_companion_preference pe 
+FROM {textbook_companion_preference} pe 
 LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
 LEFT JOIN list_of_category loc on pe.category = loc.category_id
 WHERE po.proposal_status IN (1,4) AND pe.approval_status = 1
@@ -64,7 +64,7 @@ function _textbook_companion_list_of_new_category($category_id = NULL)
 	} //$category_id != NULL
 	else
 	{
-		$category_list = db_query('SELECT * FROM list_of_category WHERE category_id != 0');
+		$category_list = db_query('SELECT * FROM {list_of_category} WHERE category_id != 0');
 	}
 	$i = 1;
 	while ($category_list_data = $category_list->fetchObject())
@@ -87,7 +87,7 @@ function _textbook_companion_list_of_new_category_display($category_id = NULL)
 	} //$category_id != NULL
 	else
 	{
-		$category_list = db_query('SELECT * FROM list_of_category WHERE category_id != 0');
+		$category_list = db_query('SELECT * FROM {list_of_category} WHERE category_id != 0');
 	}
 	while ($category_list_data = $category_list->fetchObject())
 	{
@@ -138,11 +138,11 @@ function tbc_completed_books_all()
 	$output .= "<hr style='background-color: #abb2b8;' /><div style='width:100%; float:left;'><h4>";
 	$output .= _textbook_companion_list_of_new_category($category_id);
 	$output .= "</h4></div>";
-	$result_count = db_query("SELECT pe.book FROM textbook_companion_preference pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
+	$result_count = db_query("SELECT pe.book FROM {textbook_companion_preference} pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
 	$row_count = $result_count->rowCount();
 	$output .= "<p style='clear: both;'>Total number of completed books : &nbsp;" . $row_count . " </p>";
 	$output .= "<hr style='background-color: #abb2b8;' />";
-	$result_category = db_query("SELECT * FROM list_of_category WHERE category_id !=0");
+	$result_category = db_query("SELECT * FROM {list_of_category} WHERE category_id !=0");
 	$row_category_count = $result_category->rowCount();
 	$output .= "<ol style='list-style-type: upper-roman;'><h4>";
 	for ($i = 1; $i <= $row_category_count; $i++)
@@ -274,7 +274,7 @@ function _list_of_all_completed_books($category_default_value = NULL, $subcatego
 {
 	$output = "";
 	//get the book count
-	$result = db_query("SELECT COUNT( pe.book ) AS book_count FROM textbook_companion_preference pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
+	$result = db_query("SELECT COUNT( pe.book ) AS book_count FROM {textbook_companion_preference} pe LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id WHERE po.proposal_status =3 AND pe.approval_status =1 AND pe.category>0");
 	$row = $result->fetchObject();
 	$book_count = $row->book_count;
 	$i = 1;
@@ -284,7 +284,7 @@ function _list_of_all_completed_books($category_default_value = NULL, $subcatego
 		$preference_q = db_query("SELECT DISTINCT pe.book, count( pe.book) c,tcbm.sub_category,tcbm.main_category as category_id,
       pe.author as author, pe.publisher as publisher, pe.year as year, pe.id as pe_id, pe.edition,
       po.approval_date as approval_date
-      FROM textbook_companion_preference pe
+      FROM {textbook_companion_preference} pe
       LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
       LEFT JOIN textbook_companion_book_main_subcategories tcbm ON pe.id = tcbm.pref_id
       LEFT JOIN list_of_category loc ON tcbm.main_category = loc.category_id
@@ -296,7 +296,7 @@ function _list_of_all_completed_books($category_default_value = NULL, $subcatego
 		$preference_q = db_query("SELECT DISTINCT (loc.category_id),count( pe.book) c, tcbm.sub_category,loc.maincategory,
       pe.book as book, pe.author as author, pe.publisher as publisher, pe.year as year, pe.id as pe_id, pe.edition,
       po.approval_date as approval_date
-      FROM textbook_companion_preference pe
+      FROM {textbook_companion_preference} pe
       LEFT JOIN textbook_companion_proposal po ON pe.proposal_id = po.id
       LEFT JOIN textbook_companion_book_main_subcategories tcbm ON pe.id = tcbm.pref_id
       LEFT JOIN list_of_category loc ON tcbm.main_category = loc.category_id

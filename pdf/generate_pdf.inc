@@ -15,7 +15,7 @@ function generate_pdf()
 		':prop_id' => $proposal_id
 	));
 	$data3       = $query3->fetchObject();
-	$query4 = db_query("SELECT COUNT( tce.id ) AS example_count FROM textbook_companion_example tce
+	$query4 = db_query("SELECT COUNT( tce.id ) AS example_count FROM {textbook_companion_example} tce
 						LEFT JOIN textbook_companion_chapter tcc ON tce.chapter_id = tcc.id
 						LEFT JOIN textbook_companion_preference tcpe ON tcc.preference_id = tcpe.id
 						LEFT JOIN textbook_companion_proposal tcpo ON tcpe.proposal_id = tcpo.id

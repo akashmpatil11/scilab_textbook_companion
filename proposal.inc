@@ -150,7 +150,7 @@ function textbook_companion_aicte_report_form($from, &$form_state)
 function textbook_companion_aicte_report_form_submit($form, &$form_state)
 {
 	$v = $form_state["values"];
-	$query = "INSERT INTO textbook_companion_aicte_report
+	$query = "INSERT INTO {textbook_companion_aicte_report}
         (aicte_id, name, number, email, comment)
         VALUES (:aicte_id, :name, :number, :email, :comment)";
 	$args = array(
