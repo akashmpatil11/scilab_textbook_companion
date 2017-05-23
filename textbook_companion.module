@@ -27,15 +27,6 @@ function textbook_companion_menu()
 		'type' => MENU_LOCAL_TASK,
 		'file' => 'display_books.inc'
 	);
-	$items['Completed_Books_1'] = array(
-		'title' => 'Completed Books',
-		'page callback' => 'tbc_completed_books_display_new_category_all',
-		'access arguments' => array(
-			'display books in progress'
-		),
-		'type' => MENU_LOCAL_TASK,
-		'file' => 'display_books.inc'
-	);
 	$items['proposal'] = array(
 		'title' => 'Book Proposal Form',
 		'description' => 'Book Proposal Form.',
@@ -78,41 +69,155 @@ function textbook_companion_menu()
 		'file' => 'proposal.inc'
 	);
 	/* for reviewers */
-	$items['manage_proposal'] = array(
-		'title' => 'Manage Book Proposals',
-		'description' => 'Manage Book Proposals',
-		'page callback' => '_proposal_pending',
+/*Changed 'Manage Book Proposals' to 'Manger TBC Proposals*/
+$items['manage_proposal'] = array(
+	'title' => 'Manage TBC Proposals',
+	'description' => 'Manage TBC Proposals',
+	'page callback' => '_proposal_pending',
+	'access callback' => 'user_access',
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/pending'] = array(
+	'title' => 'Pending Proposals',
+	'description' => 'Pending Proposals Queue',
+	'page callback' => '_proposal_pending',
+	'access callback' => 'user_access',
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_DEFAULT_LOCAL_TASK,
+	'weight' => 1,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/all'] = array(
+	'title' => 'All Proposals',
+	'description' => 'All Proposals',
+	'page callback' => '_proposal_all',
+	'access callback' => 'user_access',
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 2,
+	'file' => 'manage_proposal.inc'
+);
+/*What should ne the category?*/
+$items['manage_proposal/category'] = array(
+	'title' => 'Categorize',
+	'description' => 'Categorize Books',
+	'page callback' => '_category_all',
+	'access callback' => 'user_access',
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 2,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/failed'] = array(
+	'title' => 'Failed Proposals',
+	'description' => 'Failed to submit code',
+	'page callback' => '_failed_all',
+	'access callback' => 'user_access',
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_LOCAL_TASK,
+	'weight' => 3,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/approve'] = array(
+	'title' => 'Proposal Approval',
+	'description' => 'Proposal Approval',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array(
+		'proposal_approval_form'
+	),
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_CALLBACK,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/status'] = array(
+	'title' => 'Proposal Status',
+	'description' => 'Proposal Status',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array(
+		'proposal_status_form'
+	),
+	'access arguments' => array(
+		'approve book proposal'
+	),
+	'type' => MENU_CALLBACK,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/edit'] = array(
+	'title' => 'Edit Proposal',
+	'description' => 'Edit Proposal',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array(
+		'proposal_edit_form'
+	),
+	'access arguments' => array(
+		'edit book proposal'
+	),
+	'type' => MENU_CALLBACK,
+	'file' => 'manage_proposal.inc'
+);
+$items['manage_proposal/category/edit'] = array(
+	'title' => 'Edit Category',
+	'description' => 'Edit category',
+	'page callback' => 'drupal_get_form',
+	'page arguments' => array(
+		'category_edit_form'
+	),
+	'access arguments' => array(
+		'edit book proposal'
+	),
+	'type' => MENU_CALLBACK,
+	'file' => 'manage_proposal.inc'
+);
+
+/*************Manage Books*******************/
+	$items['manage_books'] = array(
+		'title' => 'Manage Book',
+		'description' => 'Manage Book',
+		'page callback' => '_book_pending',
 		'access callback' => 'user_access',
 		'access arguments' => array(
 			'approve book proposal'
 		),
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/pending'] = array(
-		'title' => 'Pending Proposals',
-		'description' => 'Pending Proposals Queue',
-		'page callback' => '_proposal_pending',
+	$items['manage_books/_book_pending'] = array(
+		'title' => 'Pending Books',
+		'description' => 'Pending Books Queue',
+		'page callback' => '_book_pending',
 		'access callback' => 'user_access',
 		'access arguments' => array(
 			'approve book proposal'
 		),
 		'type' => MENU_DEFAULT_LOCAL_TASK,
 		'weight' => 1,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/all'] = array(
-		'title' => 'All Proposals',
-		'description' => 'All Proposals',
-		'page callback' => '_proposal_all',
+	$items['manage_books/_book_all'] = array(
+		'title' => 'All Books',
+		'description' => 'All Books',
+		'page callback' => '_book_all',
 		'access callback' => 'user_access',
 		'access arguments' => array(
 			'approve book proposal'
 		),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 2,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/category'] = array(
+	$items['manage_books/category'] = array(
 		'title' => 'Categorize',
 		'description' => 'Categorize Books',
 		'page callback' => '_category_all',
@@ -122,10 +227,10 @@ function textbook_companion_menu()
 		),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 2,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/failed'] = array(
-		'title' => 'Failed Proposals',
+	$items['manage_books/failed_books'] = array(
+		'title' => 'Failed Books',
 		'description' => 'Failed to submit code',
 		'page callback' => '_failed_all',
 		'access callback' => 'user_access',
@@ -134,60 +239,50 @@ function textbook_companion_menu()
 		),
 		'type' => MENU_LOCAL_TASK,
 		'weight' => 3,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/approve'] = array(
-		'title' => 'Proposal Approval',
-		'description' => 'Proposal Approval',
+	$items['manage_books/approve'] = array(
+		'title' => 'Book Approval',
+		'description' => 'Book Approval',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array(
-			'proposal_approval_form'
+			'book_approval_form'
 		),
 		'access arguments' => array(
 			'approve book proposal'
 		),
 		'type' => MENU_CALLBACK,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/status'] = array(
-		'title' => 'Proposal Status',
-		'description' => 'Proposal Status',
+	$items['manage_books/status'] = array(
+		'title' => 'Book Status',
+		'description' => 'Book Status',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array(
-			'proposal_status_form'
+			'book_status_form'
 		),
 		'access arguments' => array(
 			'approve book proposal'
 		),
 		'type' => MENU_CALLBACK,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/edit'] = array(
-		'title' => 'Edit Proposal',
-		'description' => 'Edit Proposal',
+	$items['manage_books/edit'] = array(
+		'title' => 'Edit Books',
+		'description' => 'Edit Books',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array(
-			'proposal_edit_form'
+			'book_edit_form'
 		),
 		'access arguments' => array(
 			'edit book proposal'
 		),
 		'type' => MENU_CALLBACK,
-		'file' => 'manage_proposal.inc'
+		'file' => 'manage_book.inc'
 	);
-	$items['manage_proposal/category/edit'] = array(
-		'title' => 'Edit Category',
-		'description' => 'Edit category',
-		'page callback' => 'drupal_get_form',
-		'page arguments' => array(
-			'category_edit_form'
-		),
-		'access arguments' => array(
-			'edit book proposal'
-		),
-		'type' => MENU_CALLBACK,
-		'file' => 'manage_proposal.inc'
-	);
+/************************************************/
+
+
 	$items['code_approval'] = array(
 		'title' => 'Manage Code Approval',
 		'description' => 'Manage Code Approval',

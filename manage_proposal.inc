@@ -1,13 +1,11 @@
 <?php
 // You can find all functions regarding manage proposal
 /*
-textbook companion proposal table column "proposal_status" field values means
-0 = 'Pending';
-1 = 'Approved';
-2 = 'Dis-approved';
-3 = 'Completed';
-4 = 'External';
-5 = 'Unknown';
+"proposal_status is chaged to new_proposal_status"
+textbook companion propasal table column "new_proposal_status" field values means
+0 = 'Pending'
+1 = 'Approved'
+2 = 'Dis-approved'
 */
 function _proposal_pending()
 {
@@ -16,7 +14,9 @@ function _proposal_pending()
 	/*$pending_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 ORDER BY id DESC");*/
 	$query = db_select('textbook_companion_proposal');
 	$query->fields('textbook_companion_proposal');
-	$query->condition('proposal_status', 0);
+	/*changed*/
+	//$query->condition('proposal_status', 0);
+	$query->condition('new_proposal_status', 0);
 	$query->orderBy('id', 'DESC');
 	$pending_q = $query->execute();
 	while ($pending_data = $pending_q->fetchObject())
@@ -46,6 +46,7 @@ function _proposal_pending()
 	));
 	return $output;
 }
+/*new function _proposal_all() written | removed pervious one*/
 function _proposal_all()
 {
 	function _tbc_ext($status, $preference_id)
@@ -59,39 +60,14 @@ function _proposal_all()
 			return "";
 		}
 	}
-	/* get pending proposals to be approved */
-	$proposal_rows = array();
-	/*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} ORDER BY id DESC");*/
 	$query = db_select('textbook_companion_proposal');
 	$query->fields('textbook_companion_proposal');
 	$query->orderBy('id', 'DESC');
 	$proposal_q = $query->execute();
 	while ($proposal_data = $proposal_q->fetchObject())
 	{
-		/* get preference */
-		/*$preference_q = db_query("SELECT * FROM textbook_companion_preference WHERE proposal_id = %d AND approval_status = 1 LIMIT 1", $proposal_data->id);   
-		$preference_data = db_fetch_object($preference_q);*/
-		$query = db_select('textbook_companion_preference');
-		$query->fields('textbook_companion_preference');
-		$query->condition('proposal_id', $proposal_data->id);
-		$query->condition('approval_status', 1);
-		$query->range(0, 1);
-		$preference_q = $query->execute();
-		$preference_data = $preference_q->fetchObject();
-		if (!$preference_data)
-		{
-			/* $preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = %d AND pref_number = 1 LIMIT 1", $proposal_data->id);  
-			$preference_data = db_fetch_object($preference_q);*/
-			$query = db_select('textbook_companion_preference');
-			$query->fields('textbook_companion_preference');
-			$query->condition('proposal_id', $proposal_data->id);
-			$query->condition('pref_number', 1);
-			$query->range(0, 1);
-			$preference_q = $query->execute();
-			$preference_data = $preference_q->fetchObject();
-		} //!$preference_data
 		$proposal_status = '';
-		switch ($proposal_data->proposal_status)
+		switch ($proposal_data->new_proposal_status)
 		{
 			case 0:
 				$proposal_status = 'Pending';
@@ -102,19 +78,9 @@ function _proposal_all()
 			case 2:
 				$proposal_status = 'Dis-approved';
 				break;
-			case 3:
-				$proposal_status = 'Completed';
-				break;
-			case 4:
-				$proposal_status = 'External';
-				break;
-			default:
-				$proposal_status = 'Unknown';
-				break;
 		} //$proposal_data->proposal_status
 		$proposal_rows[] = array(
 			date('d-m-Y', $proposal_data->creation_date),
-			"{$preference_data->book} <br> <em>by {$preference_data->author}</em>",
 			l($proposal_data->full_name, 'user/' . $proposal_data->uid),
 			date('d-m-Y', $proposal_data->proposed_completion_date),
 			date('d-m-Y', $proposal_data->completion_date),
@@ -130,7 +96,6 @@ function _proposal_all()
 	} //!$proposal_rows
 	$proposal_header = array(
 		'Date of Submission',
-		'Title of the Book',
 		'Contributor Name',
 		'Proposed Date of Completion',
 		'Actual Date of Completion',
@@ -143,6 +108,7 @@ function _proposal_all()
 	));
 	return $output;
 }
+
 function _category_all()
 {
 	/* get pending proposals to be approved */
@@ -239,7 +205,7 @@ function proposal_approval_form($form, &$form_state)
 	/*$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 and id = %d", $proposal_id);*/
 	$query = db_select('textbook_companion_proposal');
 	$query->fields('textbook_companion_proposal');
-	$query->condition('proposal_status', 0);
+	$query->condition('new_proposal_status', 0);
 	$query->condition('id', $proposal_id);
 	$result = $query->execute();
 	if ($result)
@@ -409,7 +375,7 @@ function proposal_approval_form($form, &$form_state)
 						<td><strong>Category</strong></td>
 						<td>' . $cat . '</td>
 					</tr>
-				</table><br><br> 
+				</table><br><br>
 			';
 		} //$category_data as $cat
 	} //$preference_data = $preference_q->fetchObject()
@@ -481,7 +447,7 @@ function proposal_approval_form_submit($form, &$form_state)
 	global $user;
 	/* get current proposal */
 	$proposal_id = $form_state['values']['proposal_id'];
-	$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 and id = :proposal_id", array(
+	$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE new_proposal_status = 0 and id = :proposal_id", array(
 		':proposal_id' => $proposal_id
 	));
 	if ($result)
@@ -1328,7 +1294,7 @@ function proposal_edit_form_validate($form, &$form_state)
 	if (!checkdate($m, $d, $y))
 		form_set_error('completion_date', t('Invalid expected date of completion'));
 	//if (mktime(0, 0, 0, $m, $d, $y) <= time())
-	//form_set_error('completion_date', t('Expected date of completion should be in future'));  
+	//form_set_error('completion_date', t('Expected date of completion should be in future'));
 	/* edition */
 	if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
 		form_set_error('edition1', t('Invalid edition for Book Preference 1'));
@@ -1575,6 +1541,7 @@ function category_edit_form($form, &$form_state)
 		drupal_goto('manage_proposal/category');
 		return;
 	} //!$preference_data
+
 	$form['book'] = array(
 		'#type' => 'item',
 		'#title' => t('Title of the book'),
