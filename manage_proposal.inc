@@ -1040,21 +1040,54 @@ function proposal_edit_form($form, &$form_state, $nonaicte_book)
 		'#maxlength' => 100,
 		'#default_value' => $proposal_data->reviewer
 	);
-	$form['completion_date'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Expected Date of Completion'),
-		'#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
-		'#size' => 10,
-		'#maxlength' => 10,
-		'#default_value' => date('d-m-Y', $proposal_data->completion_date)
+	/*
+	 $form['completion_date'] = array(
+	 	'#type' => 'textfield',
+	 	'#title' => t('Expected Date of Completion'),
+	 	'#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
+	 	'#size' => 10,
+	 	'#maxlength' => 10,
+	 	'#default_value' => date('d-m-Y', $proposal_data->completion_date)
 	);
+	*/
+	//#default_value is in form yyyy-mm-dd
+	//date range is yet to set
+	$form['completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t('Expected Date of Completion'),
+  	'#date_increment' => 15,
+    '#date_year_range' => 'now:+3',
+    '#default_value' => date('Y-m-d', $proposal_data->completion_date),
+    '#date_format' => 'd-m-Y',
+    '#attributes' => array(
+    	'autocomplete' => 'off',
+    	'readonly' => 'readonly'
+    ),
+    "#required" => TRUE
+	);
+	/*
 	$form['proposed_completion_date'] = array(
 		'#type' => 'textfield',
-		'#title' => t('Proposed Date of Completion'),
+		'#title' => t('c'),
 		'#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
 		'#size' => 10,
 		'#maxlength' => 10,
-		'#default_value' => date('d-m-Y', $proposal_data->proposed_completion_date)
+	);
+	'#default_value' => date('d-m-Y', $proposal_data->proposed_completion_date)
+	*/
+	//date range is yet to set
+	$form['proposed_completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t(' Proposal Comletion Date'),
+		'#date_increment' => 15,
+		'#date_year_range' => 'now:+3',
+		'#default_value' => date('Y-m-d', $proposal_data->proposed_completion_date),
+		'#date_format' => 'd-m-Y',
+		'#attributes' => array(
+				'autocomplete' => 'off',
+			 'readonly' => 'readonly'
+		),
+		"#required" => TRUE
 	);
 	list($scilab, $version) = explode(' ', $proposal_data->scilab_version);
 	$scilab_version = $version;
@@ -1284,17 +1317,19 @@ function proposal_edit_form_validate($form, &$form_state)
 	/* mobile */
 	if (!preg_match('/^[0-9\ \+]{0,15}$/', $form_state['values']['mobile']))
 		form_set_error('mobile', t('Invalid mobile number'));
+
+	//No need to validate date of completion as date_popup api handles it
 	/* date of completion */
-	if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
-		form_set_error('completion_date', t('Invalid expected date of completion'));
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
-	$d = (int) $d;
-	$m = (int) $m;
-	$y = (int) $y;
-	if (!checkdate($m, $d, $y))
-		form_set_error('completion_date', t('Invalid expected date of completion'));
-	//if (mktime(0, 0, 0, $m, $d, $y) <= time())
-	//form_set_error('completion_date', t('Expected date of completion should be in future'));
+	//if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
+	// 	form_set_error('completion_date', t('Invalid expected date of completion'));
+	 list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
+	 $d = (int) $d;
+	 $m = (int) $m;
+	 $y = (int) $y;
+	 if (!checkdate($m, $d, $y))
+	 	form_set_error('completion_date', t('Invalid expected date of completion'));
+	if (mktime(0, 0, 0, $m, $d, $y) <= time())
+	form_set_error('completion_date', t('Expected date of completion should be in future'));
 	/* edition */
 	if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
 		form_set_error('edition1', t('Invalid edition for Book Preference 1'));
@@ -1418,9 +1453,10 @@ function proposal_edit_form_validate($form, &$form_state)
 function proposal_edit_form_submit($form, &$form_state)
 {
 	/* completion date to timestamp */
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	//changed list($d, $m, $y) to list list($y, $m, $d) as output format of completion_date is yyyy-mm-dd
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
-	list($d, $m, $y) = explode('-', $form_state['values']['proposed_completion_date']);
+	list($y, $m, $d) = explode('-', $form_state['values']['proposed_completion_date']);
 	$proposed_completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
 	$scilab_version = 'scilab ' . $form_state['values']['version'];
 	$proposal_id = $form_state['values']['hidden_proposal_id'];

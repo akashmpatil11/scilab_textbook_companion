@@ -81,9 +81,9 @@ function textbook_companion_aicte_proposal_form_validate($form, &$form_state)
 	} //$count > 3
 	elseif ($count == 0)
 	{
-		
+
 		form_set_error("", "Please select only <strong>1</strong> book. You currently selected <strong>{$count}</strong>");
-		
+
 	} //$count == 0
 	else
 	{
@@ -95,7 +95,7 @@ function textbook_companion_aicte_proposal_form_submit($form, &$form_state)
 {
 	global $user;
 	$selections = $form_state["values"]["selections"];
-	//var_dump($selections);    
+	//var_dump($selections);
 	variable_set("aicte_" . $user->uid, $selections);
 	drupal_goto("proposal");
 }
@@ -585,12 +585,28 @@ function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $ro
 		'#size' => 30,
 		'#maxlength' => 50
 	);
+	/*
 	$form['completion_date'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Expected Date of Completion'),
 		'#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
 		'#size' => 10,
 		'#maxlength' => 10
+	);
+	*/
+	$form['completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t('Expected Date of Completion'),
+		'#description' => t('Expected Date of completion should be less than 3 months from now in future'),
+  	'#date_increment' => 15,
+    '#date_year_range' => 'now:+3',
+    '#default_value' => '',
+    '#date_format' => 'd-m-Y',
+    '#attributes' => array(
+    	'autocomplete' => 'off',
+    	'readonly' => 'readonly'
+    ),
+    "#required" => TRUE
 	);
 	$form['operating_system'] = array(
 		'#type' => 'textfield',
@@ -835,9 +851,11 @@ function book_proposal_form_validate($form, &$form_state)
 	if (!preg_match('/^[0-9\ \+]{0,15}$/', $form_state['values']['mobile']))
 		form_set_error('mobile', t('Invalid mobile number'));
 	/* date of completion */
+	/*
 	if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
 		form_set_error('completion_date', t('Invalid expected date of completion'));
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	*/
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$d = (int) $d;
 	$m = (int) $m;
 	$y = (int) $y;
@@ -845,6 +863,10 @@ function book_proposal_form_validate($form, &$form_state)
 		form_set_error('completion_date', t('Invalid expected date of completion'));
 	if (mktime(0, 0, 0, $m, $d, $y) <= time())
 		form_set_error('completion_date', t('Expected date of completion should be in future'));
+	//If the submited completion date is beyond three months from now give following error
+	$max_completion_date = strtotime("+3 months", time());
+	if(mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
+		form_set_error('completion_date', t('Expected date of completion should be less than 3 months from now in future'));
 	/* edition */
 	if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
 		form_set_error('edition1', t('Invalid edition for Book Preference 1'));
@@ -1009,12 +1031,12 @@ function book_proposal_form_submit($form, &$form_state)
 		return;
 	} //!$user->uid
 	/* completion date to timestamp */
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
 	$scilab_version = 'scilab ' . $form_state['values']['version'];
 	$query = "INSERT INTO {textbook_companion_proposal}
-    (uid, approver_uid, full_name, mobile, gender, how_project, course, branch, university, country, city, pincode, state, faculty, reviewer, completion_date, creation_date, approval_date, proposal_status, scilab_version, operating_system, teacher_email, message, samplefilepath,proposed_completion_date) VALUES (:uid, :approver_uid, :full_name, :mobile, :gender, :how_project, :course, :branch, :university, :country, :city, :pincode, :state, :faculty, :reviewer, :completion_date,
- :creation_date, :approval_date, :proposal_status, :scilab_version, :operating_system,
+    (uid, approver_uid, full_name, mobile, gender, how_project, course, branch, university, country, city, pincode, state, faculty, reviewer, completion_date, creation_date, approval_date, proposal_status, new_proposal_status,scilab_version, operating_system, teacher_email, message, samplefilepath,proposed_completion_date) VALUES (:uid, :approver_uid, :full_name, :mobile, :gender, :how_project, :course, :branch, :university, :country, :city, :pincode, :state, :faculty, :reviewer, :completion_date,
+ :creation_date, :approval_date, :proposal_status, :new_proposal_status,:scilab_version, :operating_system,
 :teacher_email, :message, :samplefilepath,:proposed_completion_date)";
 	$args = array(
 		":uid" => $user->uid,
@@ -1036,6 +1058,7 @@ function book_proposal_form_submit($form, &$form_state)
 		":creation_date" => time(),
 		":approval_date" => 0,
 		":proposal_status" => 0,
+		":new_proposal_status" => 0,
 		":scilab_version" => $scilab_version,
 		":operating_system" => _tbc_sentence_case($form_state['values']['operating_system']),
 		":teacher_email" => $form_state['values']['faculty_email'],
@@ -1092,7 +1115,7 @@ function book_proposal_form_submit($form, &$form_state)
 	if ($form_state['values']['book1'])
 	{
 		$query = "INSERT INTO {textbook_companion_preference}
-      (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status) VALUES 		   	(:proposal_id, :pref_number, :book, :author, :isbn, :publisher, :edition, :year, :category, :approval_status)
+      (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status, book_status) VALUES 		   	(:proposal_id, :pref_number, :book, :author, :isbn, :publisher, :edition, :year, :category, :approval_status, :book_status)
 	";
 		$args = array(
 			":proposal_id" => $proposal_id,
@@ -1104,7 +1127,8 @@ function book_proposal_form_submit($form, &$form_state)
 			":edition" => $form_state['values']['edition1'],
 			":year" => $form_state['values']['year1'],
 			":category" => $form_state['values']['book_category_1'],
-			":approval_status" => 0
+			":approval_status" => 0,
+			":book_status" => 0
 		);
 		$result = db_query($query, $args, array(
 			'return' => Database::RETURN_INSERT_ID
@@ -1362,7 +1386,7 @@ function book_proposal_nonaicte_form($form, &$form_state)
                <li>Proof (example: syllabus) to the usage/ popularity of the textbook must be provided in the references box below</li>
                <li>Please make sure that the book proposed by you has <b>at least 80</b> examples which include numerical computations and which can be coded in Scilab</li>
                <li>If the book has less than 80 examples the <a href="tbc_honorarium" target="_blank">honorarium</a> will be provided on a pro-rata basis </li>
-               <li>Make sure the book you propose is not already an <a href="aicte_proposal" target="_blank">AICTE recommended book</a>, <a href="Completed_Books" target="_blank">completed book</a> 
+               <li>Make sure the book you propose is not already an <a href="aicte_proposal" target="_blank">AICTE recommended book</a>, <a href="Completed_Books" target="_blank">completed book</a>
                    or a <a href="Books_Progress" target="_blank">book in progress</a> </li>
                <li>You will be intimated about the approval or rejection of your suggestion via e-mail</li>
 
@@ -1551,6 +1575,7 @@ function book_proposal_nonaicte_form($form, &$form_state)
 		'#required' => TRUE,
 		'#maxlength' => 20
 	);
+	/*
 	$form['completion_date'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Expected Date of Completion'),
@@ -1558,6 +1583,21 @@ function book_proposal_nonaicte_form($form, &$form_state)
 		'#size' => 10,
 		'#maxlength' => 10,
 		'#required' => TRUE
+	);
+	*/
+	$form['completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t('Expected Date of Completion'),
+		'#description' => t('Expected Date of completion should be less than 3 months from now in future'),
+  	'#date_increment' => 15,
+    '#date_year_range' => 'now:+3',
+    '#default_value' => '',
+    '#date_format' => 'd-m-Y',
+    '#attributes' => array(
+    	'autocomplete' => 'off',
+    	'readonly' => 'readonly'
+    ),
+    "#required" => TRUE
 	);
 	$form['operating_system'] = array(
 		'#type' => 'textfield',
@@ -1700,9 +1740,11 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
 	if (!preg_match('/^[0-9\ \+]{0,15}$/', $form_state['values']['mobile']))
 		form_set_error('mobile', t('Invalid mobile number'));
 	/* date of completion */
+	/*
 	if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
 		form_set_error('completion_date', t('Invalid expected date of completion'));
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	*/
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$d = (int) $d;
 	$m = (int) $m;
 	$y = (int) $y;
@@ -1710,6 +1752,10 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
 		form_set_error('completion_date', t('Invalid expected date of completion'));
 	if (mktime(0, 0, 0, $m, $d, $y) <= time())
 		form_set_error('completion_date', t('Expected date of completion should be in future'));
+	//If the submited completion date is beyond three months from now give following error
+	$max_completion_date = strtotime("+3 months", time());
+	if(mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
+		form_set_error('completion_date', t('Expected date of completion should be less than 3 months from now in future'));
 	/* edition */
 	if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
 		form_set_error('edition1', t('Invalid edition for Book Preference 1'));
@@ -1822,7 +1868,7 @@ function book_proposal_nonaicte_form_submit($form, &$form_state)
 		return;
 	} //!$user->uid
 	/* completion date to timestamp */
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
 	/* Reasons for suggesting a book*/
 	if (isset($_POST['reason']))

@@ -439,7 +439,7 @@ function book_approval_form_submit($form, &$form_state)
 	));
 	$query->condition('id', $book_id);
 	$updated = $query->execute();
-	$book_status => $form_state['values']['book_status_'];
+	$book_status = $form_state['values']['book_status_'];
 	$query = "
 		SELECT *, pro.id as proposal_id FROM textbook_companion_proposal pro
 		LEFT JOIN textbook_companion_preference pre ON pre.proposal_id = pro.id
@@ -737,6 +737,7 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
 		'#maxlength' => 100,
 		'#default_value' => $proposal_data->reviewer
 	);
+	/*
 	$form['completion_date'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Expected Date of Completion'),
@@ -745,6 +746,7 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
 		'#maxlength' => 10,
 		'#default_value' => date('d-m-Y', $proposal_data->completion_date)
 	);
+
 	$form['proposed_completion_date'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Proposed Date of Completion'),
@@ -752,6 +754,33 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
 		'#size' => 10,
 		'#maxlength' => 10,
 		'#default_value' => date('d-m-Y', $proposal_data->proposed_completion_date)
+	);
+	*/
+	$form['completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t('Expected Date of Completion'),
+		'#date_increment' => 15,
+		//'#date_year_range' => '2017:+3',
+		'#default_value' => date('Y-m-d', $proposal_data->completion_date),
+		'#date_format' => 'd-m-Y',
+		'#attributes' => array(
+			'autocomplete' => 'off',
+			'readonly' => 'readonly'
+		),
+		"#required" => TRUE
+	);
+	$form['proposed_completion_date'] = array(
+		'#type' => 'date_popup',
+		'#title' => t('Propsed Completion Date'),
+		'#date_increment' => 15,
+		//'#date_year_range' => '2017:+3',
+		'#default_value' => date('Y-m-d', $proposal_data->proposed_completion_date),
+		'#date_format' => 'd-m-Y',
+		'#attributes' => array(
+				'autocomplete' => 'off',
+			 'readonly' => 'readonly'
+		),
+		"#required" => TRUE
 	);
 	$form['preference'] = array(
 		'#type' => 'fieldset',
@@ -836,16 +865,16 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
 function book_edit_form_validate($form, &$form_state)
 {
 	/* date of completion */
-	if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
-		form_set_error('completion_date', t('Invalid expected date of completion'));
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
-	$d = (int) $d;
-	$m = (int) $m;
-	$y = (int) $y;
-	if (!checkdate($m, $d, $y))
-		form_set_error('completion_date', t('Invalid expected date of completion'));
-	//if (mktime(0, 0, 0, $m, $d, $y) <= time())
-	//form_set_error('completion_date', t('Expected date of completion should be in future'));
+	// if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
+	// 	form_set_error('completion_date', t('Invalid expected date of completion'));
+	 list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	 $d = (int) $d;
+	 $m = (int) $m;
+	 $y = (int) $y;
+	 if (!checkdate($m, $d, $y))
+	 	form_set_error('completion_date', t('Invalid expected date of completion'));
+	if (mktime(0, 0, 0, $m, $d, $y) <= time())
+		form_set_error('completion_date', t('Expected date of completion should be in future'));
 	/* edition */
 	if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition']))
 		form_set_error('edition1', t('Invalid edition for Book'));
@@ -865,9 +894,9 @@ function book_edit_form_validate($form, &$form_state)
 function book_edit_form_submit($form, &$form_state)
 {
 	/* completion date to timestamp */
-	list($d, $m, $y) = explode('-', $form_state['values']['completion_date']);
+	list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
 	$completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
-	list($d, $m, $y) = explode('-', $form_state['values']['proposed_completion_date']);
+	list($y, $m, $d) = explode('-', $form_state['values']['proposed_completion_date']);
 	$proposed_completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
 	$proposal_id = $form_state['values']['hidden_proposal_id'];
 	$query = db_update('textbook_companion_proposal');
@@ -1244,36 +1273,4 @@ function _failed_all($preference_id = 0, $confirm = "")
 		));
 	}
 	return $page_content;
-}
-/**
- * Simple wrapper function for drupal_mail() to avoid extraneous code.
- */
-function send_mail($from, $to, $bcc, $subject, $message)
-{
-	$my_module = 'textbook_companion';
-	$my_mail_token = microtime();
-	$message = array(
-		'id' => $my_module . '_' . $my_mail_token,
-		'to' => $to,
-		'subject' => $subject,
-		'body' => array(
-			$message
-		),
-		'headers' => array(
-			'From' => $from,
-			'Sender' => $from,
-			'Return-Path' => $from,
-			'Bcc' => $bcc
-		)
-	);
-	$system = drupal_mail_system($my_module, $my_mail_token);
-	$message = $system->format($message);
-	if ($system->mail($message))
-	{
-		return TRUE;
-	} //$system->mail($message)
-	else
-	{
-		return FALSE;
-	}
 }
