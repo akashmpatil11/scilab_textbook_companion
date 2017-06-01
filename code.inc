@@ -335,6 +335,7 @@ $(document).ready(function(){
 	);
 	return $form;
 }
+/*upload exanple form validation*/
 function upload_examples_form_validate($form, &$form_state)
 {
 	if (!check_name($form_state['values']['name']))
