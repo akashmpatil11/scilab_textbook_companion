@@ -84,7 +84,11 @@ function list_chapters()
 		$example_data = $result->fetchObject();
 		$chapter_rows[] = array(
 			$chapter_data->number,
-			$chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . ')',
+			$chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . '|'.l('Delete', 'textbook_companion/code/chapter/delete/'. $chapter_data->id, array(
+						'attributes' => array(
+							'onClick' => 'return confirm("Are you sure you want to delete the Chapter? Once you delete chapter, all the codes related to chapter will be deleted.")'
+						)
+					)).')',
 			$example_data->example_count,
 			l('View', 'textbook_companion/code/list_examples/' . $chapter_data->id)
 		);

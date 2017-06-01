@@ -22,6 +22,7 @@ function upload_examples_form($form, &$form_state)
 		drupal_set_message("Please submit a " . l('proposal', 'proposal') . ".", 'error');
 		drupal_goto('');
 	} //!$proposal_data
+	//need to change according to new_proposal_status and book_status
 	if ($proposal_data->proposal_status != 1 && $proposal_data->proposal_status != 4)
 	{
 		switch ($proposal_data->proposal_status)
@@ -66,14 +67,14 @@ function upload_examples_form($form, &$form_state)
 	/************************ end approve book details **************************/
 	/* add javascript for automatic book title, check if example uploaded, dependency selection effects */
 	$chapter_name_js = "(function ($) {
-  
+
 $(document).ready(function(){
 
     $('#edit-number').change(function() {
   var ed = $('#edit-number').val();
-  
-   
- 
+
+
+
       $.get('" . base_path() . "textbook_companion/ajax/chapter_title/' + $('#edit-number').val() + '/' + " . $preference_data->id . ", function(data) {
         $('#edit-name').val(data);
       });
@@ -86,7 +87,7 @@ $(document).ready(function(){
       });
     });
     $('#edit-existing-depfile-dep-book-title').change(function() {
-      var dep_selected = ''; 
+      var dep_selected = '';
       /* showing and hiding relevant files */
       $('.form-checkboxes .option').hide();
       $('.form-checkboxes .option').each(function(index) {
@@ -106,10 +107,10 @@ $(document).ready(function(){
       $('#edit-existing-depfile-dep-book-title').trigger('change');
     });
     $('#edit-existing-depfile-dep-book-title').trigger('change');
-      
+
        });
  })(jQuery);";
-	drupal_add_js($chapter_name_js, 'inline', 'header');
+	//drupal_add_js($chapter_name_js, 'inline', 'header');
 	$form['#attributes'] = array(
 		'enctype' => "multipart/form-data"
 	);
@@ -123,6 +124,7 @@ $(document).ready(function(){
 		'#markup' => $proposal_data->full_name,
 		'#title' => t('Contributor Name')
 	);
+	/*
 	$options = array(
 		'' => '(Select)'
 	);
@@ -130,7 +132,27 @@ $(document).ready(function(){
 	{
 		$options[$i] = $i;
 	} //$i = 1; $i <= 100; $i++
-	//var_dump($options);
+	*/
+	/*existing chapters saved in $options*/
+	$options = array(
+		'' => 'select',
+	);
+	/*'New Chpater' option for entering new chapter*/
+	$options[0] = 'New Chapter';
+	$chapter_description = array(
+		'chapter_number' => 'chapter_name'
+	);
+	$query = db_select('textbook_companion_chapter');
+	$query->fields('textbook_companion_chapter');
+	$query->condition('preference_id', $preference_data->id);
+	//$query->condition('number', $form_state['values']['number']);
+	$chapter_result = $query->execute();
+	while($data = $chapter_result->fetchObject()){
+		$options[$data->number] = $data->number;
+		$chapter_description[$data->number] = $data->name;
+	}
+	/*If existing chapter selected, automatically 'name' field will be filled by chapter name*/
+	/*Else textfiled field will be popup, for entering chapter */
 	$form['number'] = array(
 		'#type' => 'select',
 		'#title' => t('Chapter No'),
@@ -140,17 +162,54 @@ $(document).ready(function(){
 		//                     '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
 		//                     '31', '32', '33', '34', '35', '36', '37', '38', '39', '40',
 		//                     '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'),
+
+		'#ajax' => array(
+      'callback' => 'display_chapter_name_callback',
+      'wrapper' => 'display-chapter-name-wrapper',
+     ),
+
 		'#multiple' => FALSE,
 		'#size' => 1,
-		'#required' => TRUE
+		'#required' => TRUE,
+	);
+	$form['chapter_not_exist'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Chapter No.'),
+		'#size' => 48,
+		//'#description' => t("<Strong style='color:red' >Upload new Main or Source file above, if you want to replace the existing file. Leave blank if you want to keep using the existing file.</strong> <br />") . t('Allowed file extensions : ') . variable_get('textbook_companion_source_extensions', ''),
+		'#states' => array(
+			'visible' => array(
+				':input[name="number"]' => array(
+					'value' => '0'
+				)
+			)
+		)
 	);
 	$form['name'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Title of the Chapter'),
+		'#value' => "",
 		'#size' => 40,
 		'#maxlength' => 255,
-		'#required' => TRUE
+		'#required' => TRUE,
+		'#prefix' => '<div id = "display-chapter-name-wrapper">',
+		'#suffix' => '</div>',
 	);
+	if(isset($form_state['values']['number']))
+	{
+		if($form_state['values']['number'] != "0")
+		{
+			$form['name']['#value'] = $chapter_description[$form_state['values']['number']];
+			//$form['name']['value'] = $chapter_description[$form_state['values']['number']];
+		}
+		else
+			$form['name']['#value'] = "";
+
+	}
+
+	function display_chapter_name_callback($form, &$form_state) {
+		return $form['name'];
+	}
 	$form['example_number'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Example No'),
@@ -343,7 +402,7 @@ function upload_examples_form_validate($form, &$form_state)
       });
     });
     $('#edit-existing-depfile-dep-book-title').change(function() {
-      var dep_selected = ''; 
+      var dep_selected = '';
       /* showing and hiding relevant files */
       $('.form-checkboxes .option').hide();
       $('.form-checkboxes .option').each(function(index) {
@@ -352,7 +411,7 @@ function upload_examples_form_validate($form, &$form_state)
           $(this).show();
         }
         if ($(this).children().attr('checked') == true) {
-          dep_selected += $(this).children().next().text() + '<br />';
+          dep_fed += $(this).children().next().text() + '<br />';
         }
       });
       /* showing list of already existing dependencies */
@@ -448,11 +507,20 @@ function upload_examples_form_submit($form, &$form_state)
 		);
 		$chapter_id = db_last_insert_id('textbook_companion_chapter', 'id'); */
 		$query = "INSERT INTO {textbook_companion_chapter} (preference_id, number, name) VALUES(:preference_id, :number, :name)";
-		$args = array(
-			":preference_id" => $preference_id,
-			":number" => $form_state['values']['number'],
-			":name" => $form_state['values']['name']
-		);
+		if($form_state['values']['number']) {
+			$args = array(
+				":preference_id" => $preference_id,
+				":number" => $form_state['values']['number'],
+				":name" => $form_state['values']['name']
+			);
+		}
+		else {
+			$args = array(
+				":preference_id" => $preference_id,
+				":number" => $form_state['values']['chapter_not_exist'],
+				":name" => $form_state['values']['name']
+			);
+		}
 		$result = db_query($query, $args, array(
 			'return' => Database::RETURN_INSERT_ID
 		));
@@ -461,6 +529,7 @@ function upload_examples_form_submit($form, &$form_state)
 	else
 	{
 		$chapter_id = $chapter_row->id;
+		//Var_dump($chapter_id);die;
 		/*db_query("UPDATE {textbook_companion_chapter} SET name = '%s' WHERE id = %d", $form_state['values']['name'], $chapter_id);*/
 		$query = db_update('textbook_companion_chapter');
 		$query->fields(array(
@@ -633,6 +702,16 @@ function upload_examples_form_submit($form, &$form_state)
 	drupal_goto('textbook_companion/code');
 }
 /******************************************************************************/
+/***************************** DELETE CHAPTER *********************************/
+/******************************************************************************/
+function _chapter_delete()
+{
+	global $user;
+	$chapter_id = arg(4);
+	delete_chapter($chapter_id);
+	drupal_goto('textbook_companion/code');
+}
+/******************************************************************************/
 /***************************** DELETE EXAMPLE *********************************/
 /******************************************************************************/
 function _upload_examples_delete()
@@ -707,7 +786,7 @@ function _upload_examples_delete()
 	/* deleting example files */
 	if (delete_example($example_data->id))
 	{
-		drupal_set_message('Example deleted.', 'status');
+		drupal_set_message('Example deleted.', 'status');-
 		/* sending email */
 		$email_to = $user->mail;
 		$from = variable_get('textbook_companion_from_email', '');
