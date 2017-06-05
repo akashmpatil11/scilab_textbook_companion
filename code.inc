@@ -156,13 +156,8 @@ $(document).ready(function(){
 	$form['number'] = array(
 		'#type' => 'select',
 		'#title' => t('Chapter No'),
+		'#empty_option' => '-Select-',
 		'#options' => $options,
-		// '#options' => array('' => '(Select)', '1' => '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
-		//                     '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-		//                     '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
-		//                     '31', '32', '33', '34', '35', '36', '37', '38', '39', '40',
-		//                     '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'),
-
 		'#ajax' => array(
       'callback' => 'display_chapter_name_callback',
       'wrapper' => 'display-chapter-name-wrapper',
@@ -188,7 +183,7 @@ $(document).ready(function(){
 	$form['name'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Title of the Chapter'),
-		'#value' => "",
+		//'#value' => "",
 		'#size' => 40,
 		'#maxlength' => 255,
 		'#required' => TRUE,
@@ -200,15 +195,8 @@ $(document).ready(function(){
 		if($form_state['values']['number'] != "0")
 		{
 			$form['name']['#value'] = $chapter_description[$form_state['values']['number']];
-			//$form['name']['value'] = $chapter_description[$form_state['values']['number']];
+			$form['name']['#description'] = t("<div style='color:red'><strong>Note:</strong> Chapter name will be according to existing chapter no. seleted.</div>");
 		}
-		else
-			$form['name']['#value'] = "";
-
-	}
-
-	function display_chapter_name_callback($form, &$form_state) {
-		return $form['name'];
 	}
 	$form['example_number'] = array(
 		'#type' => 'textfield',
@@ -325,6 +313,10 @@ $(document).ready(function(){
 		'#size' => 48,
 		'#description' => t('Separate filenames with underscore. No spaces or any special characters allowed in filename.') . '<br />' . t('Allowed file extensions : ') . variable_get('textbook_companion_xcos_extensions', '')
 	);
+	$form['preference_id'] = array(
+		'#type' => 'hidden',
+		'#value' => $preference_data->id,
+	);
 	$form['submit'] = array(
 		'#type' => 'submit',
 		'#value' => t('Submit')
@@ -338,8 +330,18 @@ $(document).ready(function(){
 /*upload exanple form validation*/
 function upload_examples_form_validate($form, &$form_state)
 {
-	if (!check_name($form_state['values']['name']))
-		form_set_error('name', t('Title of the Chapter can contain only alphabets, numbers and spaces.'));
+	if($form_state['values']['number'] == '0') {
+		if(!is_numeric($form_state['values']['chapter_not_exist']))
+			form_set_error('chapter_not_exist', t('Chapter No. can contains only numbers.'));
+		if (!check_name($form_state['values']['name']))
+			form_set_error('name', t('Title of the Chapter can contain only alphabets, numbers and spaces.'));
+		if(check_chapter_exist($form_state['values']['chapter_not_exist'], $form_state['values']['preference_id']))
+			form_set_error('chapter_not_exist', t('Chapter Exist. Plese enter new chapter.'));
+	}
+	else {
+		if(!check_chapter_name($form_state['values']['number'], $form_state['values']['name'], $form_state['values']['preference_id']))
+			form_set_error('name', 'Chapter name can not be changed. You can change chapter name in section.');
+	}
 	if (!check_name($form_state['values']['example_caption']))
 		form_set_error('example_caption', t('Example Caption can contain only alphabets, numbers and spaces.'));
 	if (!check_chapter_number($form_state['values']['example_number']))
@@ -530,7 +532,6 @@ function upload_examples_form_submit($form, &$form_state)
 	else
 	{
 		$chapter_id = $chapter_row->id;
-		//Var_dump($chapter_id);die;
 		/*db_query("UPDATE {textbook_companion_chapter} SET name = '%s' WHERE id = %d", $form_state['values']['name'], $chapter_id);*/
 		$query = db_update('textbook_companion_chapter');
 		$query->fields(array(
@@ -710,6 +711,7 @@ function _chapter_delete()
 	global $user;
 	$chapter_id = arg(4);
 	delete_chapter($chapter_id);
+	drupal_set_message(t("Chapter deleted successfully."), 'status');
 	drupal_goto('textbook_companion/code');
 }
 /******************************************************************************/
@@ -867,4 +869,34 @@ function _list_of_book_dependency_files($book_id)
 		$book_dependency_files,
 		$book_dependency_files_class
 	);
+}
+function display_chapter_name_callback($form, &$form_state) {
+	return $form['name'];
+}
+/*function returns wheather chapter no. exists or not*/
+function check_chapter_exist($number, $preference_id) {
+	$query = db_select('textbook_companion_chapter');
+	$query->fields('textbook_companion_chapter');
+	$query->condition('preference_id', $preference_id);
+	$query->condition('number', $number);
+	$chapter_result = $query->execute();
+	if($data = $chapter_result->fetchObject()){
+		if($number == $data->number)
+			return TRUE;
+	}
+	return FALSE;
+}
+/*function returns wheather existing chapter name is changed or not*/
+function check_chapter_name($number, $name, $preference_id) {
+	$query = db_select('textbook_companion_chapter');
+	$query->fields('textbook_companion_chapter');
+	$query->condition('preference_id', $preference_id);
+	$query->condition('number', $number);
+	$chapter_result = $query->execute();
+	if($data = $chapter_result->fetchObject())
+	{
+		if($name == $data->name)
+			return TRUE;
+	}
+	return FALSE;
 }
