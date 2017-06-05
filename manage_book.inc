@@ -406,10 +406,17 @@ function book_approval_form($form, &$form_state)
 		'#title' => t('Year of pulication'),
 		'#markup' => $book_data->year
 	);
+	$status = array(
+		'0' => 'In progress',
+		'1' => 'Under Review',
+		'2' => 'Approved',
+		'3' => 'Completed',
+		'4' => 'Disabled',
+	);
 	$form['book_status_'] = array(
 		'#type' => 'select',
 		'#title' => t('Status'),
-		'#options' => array(t('In progress'), t('Under Review'), t('Approved'), t('Completed'),t('Disabled')),
+		'#options' => $status,
 		'#required' => TRUE,
 		'#default_value' => $book_status
 	);
@@ -433,44 +440,45 @@ function book_approval_form($form, &$form_state)
 }
 function book_approval_form_submit($form, &$form_state)
 {
+	$book_id = $form_state['values']['book_id'];
 	$query = db_update('textbook_companion_preference');
 	$query->fields(array(
 		'book_status' => $form_state['values']['book_status_'],
 	));
 	$query->condition('id', $book_id);
 	$updated = $query->execute();
-	$book_status = $form_state['values']['book_status_'];
-	$query = "
-		SELECT *, pro.id as proposal_id FROM textbook_companion_proposal pro
-		LEFT JOIN textbook_companion_preference pre ON pre.proposal_id = pro.id
-		LEFT JOIN users usr ON usr.uid = pro.uid
-		WHERE pre.id = {:preference_id}
-	";
-	$result = db_query($query, array(
-		':preference_id' => $book_id
-	));
-	$row = $result->fetchObject();
-	/* increment failed_reminder */
-	db_query($query, array(
-		':id' => $row->proposal_id
-	));
-	$to = $row->mail;
-	$subject = "Status is Changed";
-	$body = "
-	<p>
-		Dear {$row->full_name},<br><br>
-		This is to inform you that you book satus is change to '$book_status'.<br><br>
-		Regards,<br>
-		Scilab Team
-	</p>
-	";
-	$message = $body;
-	//drupal_mail($message);
-	//drupal_mail('', 'standard', $email_to, language_default(), $params, variable_get('textbook_companion_from_email', NULL), TRUE))
-	$from = variable_get('textbook_companion_from_email', NULL);
-	$bcc = variable_get('textbook_companion_emails_fail_rem_bcc', NULL);
-	send_mail($from, $to, $bcc, $subject, $message);
-	drupal_set_message("Mail sent successfully.");
+
+	// $query = "
+	// 	SELECT *, pro.id as proposal_id FROM textbook_companion_proposal pro
+	// 	LEFT JOIN textbook_companion_preference pre ON pre.proposal_id = pro.id
+	// 	LEFT JOIN users usr ON usr.uid = pro.uid
+	// 	WHERE pre.id = {:preference_id}
+	// ";
+	// $result = db_query($query, array(
+	// 	':preference_id' => $book_id
+	// ));
+	// $row = $result->fetchObject();
+	// /* increment failed_reminder */
+	// db_query($query, array(
+	// 	':id' => $row->proposal_id
+	// ));
+	// $to = $row->mail;
+	// $subject = "Status is Changed";
+	// $body = "
+	// <p>
+	// 	Dear {$row->full_name},<br><br>
+	// 	This is to inform you that you book satus is change to '$book_status'.<br><br>
+	// 	Regards,<br>
+	// 	Scilab Team
+	// </p>
+	// ";
+	// $message = $body;
+	// //drupal_mail($message);
+	// //drupal_mail('', 'standard', $email_to, language_default(), $params, variable_get('textbook_companion_from_email', NULL), TRUE))
+	// $from = variable_get('textbook_companion_from_email', NULL);
+	// $bcc = variable_get('textbook_companion_emails_fail_rem_bcc', NULL);
+	// send_mail($from, $to, $bcc, $subject, $message);
+	// drupal_set_message("Mail sent successfully.");
 	drupal_goto("manage_books/");
 	return;
 }
@@ -485,7 +493,6 @@ function book_status_form($form, &$form_state)
 	/*$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 and id = %d", $proposal_id);*/
 	$query = db_select('textbook_companion_preference');
 	$query->fields('textbook_companion_preference');
-	$query->condition('book_status', 0);
 	$query->condition('id', $book_id);
 	$result = $query->execute();
 	if ($result)
