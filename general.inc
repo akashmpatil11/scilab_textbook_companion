@@ -108,7 +108,9 @@ function list_chapters()
 	$return_html .= theme('table', array(
 		'header' => $chapter_header,
 		'rows' => $chapter_rows
-	));
+	)).'<br/>';
+	$submited_all_example = drupal_get_form("all_example_submitted_check_form", $preference_data->id);
+	$return_html .= drupal_render($submited_all_example);
 	return $return_html;
 }
 function list_examples()
@@ -309,4 +311,169 @@ function list_examples()
 		'rows' => $example_rows
 	));
 	return $return_html;
+}
+/*Form to confirm book completion*/
+function all_example_submitted_check_form($form, &$form_state, $preference_id)
+{
+	$form = array();
+	$form['all_example_submitted'] = array(
+		'#type' => 'checkbox',
+		'#title' => t('I have submitted codes for all the examples'),
+		'#description' => 'Once you have submited this option you are not able to upload more examples.',
+		'#required' => TRUE,
+	);
+	$form['preference_id'] = array(
+		'#type' => 'hidden',
+		'#value' => $preference_id
+	);
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => t('Submit')
+	);
+	return $form;
+}
+/*Validation of all_example_submitted_check_form*/
+function all_example_submitted_check_form_validate($form, &$form_state, $preference_id)
+{
+	/*check for all_example_submitted = 1*/
+	if ($form_state['values']['all_example_submitted'] != 1) {
+		form_set_error('all_example_submitted', t('Please check the field if you are intrested to submit the all uploaded examples for review!'));
+	}
+	/*check for empty book*/
+	if(!check_book($form_state['values']['preference_id'])) {
+		form_set_error('all_example_submitted', t('You have not uploaded single code'));
+	}
+	return;
+}
+/**
+ *Run bash script to check for errors in code
+ *If error occurs send mail to user and keep submited_all_examples_code = 0
+ *If no error found lock the book, submited_all_examples_code = 1, and mail to user, cc, bcc
+ */
+function all_example_submitted_check_form_submit($form, &$form_state, $preference_id)
+{
+	global $user;
+	if ($form_state['values']['all_example_submitted'] == 1) {
+		/*script*/
+		db_query('UPDATE textbook_companion_preference SET submited_all_examples_code = 1 WHERE id = :preference_id', array(
+			':preference_id' => $form_state['values']['preference_id']
+		));
+		/* sending email */
+		// $query                = ("SELECT proposal_id FROM textbook_companion_preference WHERE id= :preference_id");
+		// $args                 = array(
+		// 	":preference_id" => $form_state['values'][':preference_id']
+		// );
+		// $proposal_data        = db_query($query, $args);
+		// $proposal_data_result = $proposal_data->fetchObject();
+		//
+		// $email_to                                   = $user->mail;
+		// $from                                       = variable_get('textbook_companion_from_email', '');
+		// $bcc                                        = variable_get('textbook_companion_emails', '');
+		// $cc                                         = variable_get('textbook_companion_cc_emails', '');
+		// $params['all_code_submitted']['proposal_id'] = $proposal_data_result->proposal_id;
+		// $params['all_code_submitted']['user_id']     = $user->uid;
+		// $params['all_code_submitted']['headers']     = array(
+		// 	'From' => $from,
+		// 	'MIME-Version' => '1.0',
+		// 	'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+		// 	'Content-Transfer-Encoding' => '8Bit',
+		// 	'X-Mailer' => 'Drupal',
+		// 	'Cc' => $cc,
+		// 	'Bcc' => $bcc
+		// );
+		// if (!drupal_mail('textbook_companion', 'all_code_submitted', $email_to, language_default(), $params, $from, TRUE))
+		// 	drupal_set_message('Error sending email message.', 'error');
+	} //$form_state['values']['all_example_submitted'] == 1
+	$root_path = textbook_companion_path();
+	$book_path = $root_path.$form_state['values']['preference_id'];
+	chdir($root_path."auto_check/");
+	$sh_command = "bash auto.sh"." ".$book_path." ".$form_state['values']['preference_id'];
+	$command = "mkdir try";
+	exec("chmod -R 777"." ".$book_path);
+	exec($sh_command);
+	return;
+}
+/*function to check book Directory exists or not*/
+function check_book($book_id) {
+  $status = FALSE;
+  $root_path = textbook_companion_path();
+  /*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = %d", $book_id);
+  $preference_data = db_fetch_object($preference_q);*/
+  $query = db_select('textbook_companion_preference');
+  $query->fields('textbook_companion_preference');
+  $query->condition('id', $book_id);
+  $preference_q = $query->execute();
+  $preference_data = $preference_q->fetchObject();
+  if (!$preference_data) {
+    drupal_set_message(t('Invalid book.'), 'error');
+    return FALSE;
+  } //!$preference_data
+  /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d", $preference_data->id);*/
+  $query = db_select('textbook_companion_chapter');
+  $query->fields('textbook_companion_chapter');
+  $query->condition('preference_id', $preference_data->id);
+  $chapter_q = $query->execute();
+  while ($chapter_data = $chapter_q->fetchObject())
+    $status = ($status || check_chapter($chapter_data->id));
+  return $status;
+}
+/*function to check wheather chapter Directory exists or not*/
+function check_chapter($chapter_id) {
+  $status = FALSE;
+  $root_path = textbook_companion_path();
+  /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE id = %d", $chapter_id);
+  $chapter_data = db_fetch_object($chapter_q);*/
+  $query = db_select('textbook_companion_chapter');
+  $query->fields('textbook_companion_chapter');
+  $query->condition('id', $chapter_id);
+  $chapter_q = $query->execute();
+  $chapter_data = $chapter_q->fetchObject();
+  if (!$chapter_data) {
+    drupal_set_message(t('Invalid chapter.'), 'error');
+    return FALSE;
+  } //!$chapter_data
+  /*$example_q = db_query("SELECT * FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_id);*/
+  $query = db_select('textbook_companion_example');
+  $query->fields('textbook_companion_example');
+  $query->condition('chapter_id', $chapter_id);
+  $example_q = $query->execute();
+  while ($example_data = $example_q->fetchObject())
+    $status =  ($status || check_example($example_data->id));
+  return $status;
+}
+/*function to check wheather example contains example file or not*/
+function check_example($example_id) {
+  global $user;
+  $root_path = textbook_companion_path();
+  $status = FALSE;
+  /*$example_q = db_query("SELECT * FROM {textbook_companion_example} WHERE id = %d", $example_id);
+  $example_data = db_fetch_object($example_q);*/
+  $query = db_select('textbook_companion_example');
+  $query->fields('textbook_companion_example');
+  $query->condition('id', $example_id);
+  $example_q = $query->execute();
+  $example_data = $example_q->fetchObject();
+  if (!$example_data) {
+    drupal_set_message(t('Invalid example.'), 'error');
+    return FALSE;
+  } //!$example_data
+  /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE id = %d", $example_data->chapter_id);
+  $chapter_data = db_fetch_object($chapter_q);*/
+  $query = db_select('textbook_companion_chapter');
+  $query->fields('textbook_companion_chapter');
+  $query->condition('id', $example_data->chapter_id);
+  $chapter_q = $query->execute();
+  $chapter_data = $chapter_q->fetchObject();
+  if (!$chapter_data) {
+    drupal_set_message(t('Invalid example chapter.'), 'error');
+    return FALSE;
+  } //!$chapter_data
+  /*$examples_files_q = db_query("SELECT * FROM {textbook_companion_example_files} WHERE example_id = %d", $example_id);*/
+  $query = db_select('textbook_companion_example_files');
+  $query->fields('textbook_companion_example_files');
+  $query->condition('example_id', $example_id);
+  $examples_files_q = $query->execute();
+  while ($examples_files_data = $examples_files_q->fetchObject())
+      $status = ($status || file_exists($root_path . $examples_files_data->filepath));
+  return $status;
 }
