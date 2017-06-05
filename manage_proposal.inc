@@ -523,7 +523,8 @@ function proposal_approval_form_submit($form, &$form_state)
 	$query->fields(array(
 		'approver_uid' => $user->uid,
 		'approval_date' => time(),
-		'proposal_status' => 1
+		'propasal_status' => 1,
+		'new_proposal_status' => 1
 	));
 	$query->condition('id', $proposal_id);
 	$num_updated = $query->execute();
