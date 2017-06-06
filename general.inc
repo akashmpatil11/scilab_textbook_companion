@@ -60,57 +60,110 @@ function list_chapters()
 		return;
 	} //!$preference_data
 	/************************ end approve book details **************************/
-	$return_html = '<br />';
-	$return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
-	$return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
-	$return_html .= l('Upload Example Code', 'textbook_companion/code/upload') . '<br />';
-	/* get chapter list */
-	$chapter_rows = array();
-	/*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number ASC", $preference_data->id);*/
-	$query = db_select('textbook_companion_chapter');
-	$query->fields('textbook_companion_chapter');
-	$query->condition('preference_id', $preference_data->id);
-	$query->orderBy('number', 'ASC');
-	$chapter_q = $query->execute();
-	while ($chapter_data = $chapter_q->fetchObject())
+	if($preference_data->submited_all_examples_code)
 	{
-		/* get example list */
-		/* $example_q = db_query("SELECT count(*) as example_count FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_data->id);
-		$example_data = db_fetch_object($example_q);*/
-		$query = db_select('textbook_companion_example');
-		$query->addExpression('count(*)', 'example_count');
-		$query->condition('chapter_id', $chapter_data->id);
-		$result = $query->execute();
-		$example_data = $result->fetchObject();
-		$chapter_rows[] = array(
-			$chapter_data->number,
-			$chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . '|'.l('Delete', 'textbook_companion/code/chapter/delete/'. $chapter_data->id, array(
-						'attributes' => array(
-							'onClick' => 'return confirm("Are you sure you want to delete the Chapter? Once you delete chapter, all the codes related to chapter will be deleted.")'
-						)
-					)).')',
-			$example_data->example_count,
-			l('View', 'textbook_companion/code/list_examples/' . $chapter_data->id)
+		drupal_set_message('Book has sent for Review. You can not add or make changes to your codes.', 'warning');
+		$return_html = '<br />';
+		$return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
+		$return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
+		$return_html .= 'Upload Example Code'.'<br />';
+		/* get chapter list */
+		$chapter_rows = array();
+		/*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number ASC", $preference_data->id);*/
+		$query = db_select('textbook_companion_chapter');
+		$query->fields('textbook_companion_chapter');
+		$query->condition('preference_id', $preference_data->id);
+		$query->orderBy('number', 'ASC');
+		$chapter_q = $query->execute();
+		while ($chapter_data = $chapter_q->fetchObject())
+		{
+			/* get example list */
+			/* $example_q = db_query("SELECT count(*) as example_count FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_data->id);
+			$example_data = db_fetch_object($example_q);*/
+			$query = db_select('textbook_companion_example');
+			$query->addExpression('count(*)', 'example_count');
+			$query->condition('chapter_id', $chapter_data->id);
+			$result = $query->execute();
+			$example_data = $result->fetchObject();
+			$chapter_rows[] = array(
+				$chapter_data->number,
+				$chapter_data->name . ' (' .'Edit'.'|'.'Delete'. ')',
+				$example_data->example_count,
+				'View',
+			);
+		} //$chapter_data = $chapter_q->fetchObject()
+		/* check if there are any chapters */
+		if (!$chapter_rows)
+		{
+			drupal_set_message(t('No uploads found.'), 'status');
+			return $return_html;
+		} //!$chapter_rows
+		$chapter_header = array(
+			'Chapter No.',
+			'Title of the Chapter',
+			'Uploaded Examples',
+			'Actions'
 		);
-	} //$chapter_data = $chapter_q->fetchObject()
-	/* check if there are any chapters */
-	if (!$chapter_rows)
+		$return_html .= theme('table', array(
+			'header' => $chapter_header,
+			'rows' => $chapter_rows
+		)).'<br/>';
+		$return_html .= drupal_render($submited_all_example);
+	}
+	else
 	{
-		drupal_set_message(t('No uploads found.'), 'status');
-		return $return_html;
-	} //!$chapter_rows
-	$chapter_header = array(
-		'Chapter No.',
-		'Title of the Chapter',
-		'Uploaded Examples',
-		'Actions'
-	);
-	$return_html .= theme('table', array(
-		'header' => $chapter_header,
-		'rows' => $chapter_rows
-	)).'<br/>';
-	$submited_all_example = drupal_get_form("all_example_submitted_check_form", $preference_data->id);
-	$return_html .= drupal_render($submited_all_example);
+		$return_html = '<br />';
+		$return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
+		$return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
+		$return_html .= l('Upload Example Code', 'textbook_companion/code/upload') . '<br />';
+			/* get chapter list */
+		$chapter_rows = array();
+		/*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number ASC", $preference_data->id);*/
+		$query = db_select('textbook_companion_chapter');
+		$query->fields('textbook_companion_chapter');
+		$query->condition('preference_id', $preference_data->id);
+		$query->orderBy('number', 'ASC');
+		$chapter_q = $query->execute();
+		while ($chapter_data = $chapter_q->fetchObject())
+		{
+			/* get example list */
+			/* $example_q = db_query("SELECT count(*) as example_count FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_data->id);
+			$example_data = db_fetch_object($example_q);*/
+			$query = db_select('textbook_companion_example');
+			$query->addExpression('count(*)', 'example_count');
+			$query->condition('chapter_id', $chapter_data->id);
+			$result = $query->execute();
+			$example_data = $result->fetchObject();
+			$chapter_rows[] = array(
+				$chapter_data->number,
+				$chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . '|'.l('Delete', 'textbook_companion/code/chapter/delete/'. $chapter_data->id, array(
+							'attributes' => array(
+								'onClick' => 'return confirm("Are you sure you want to delete the Chapter? Once you delete chapter, all the codes related to chapter will be deleted.")'
+							)
+						)).')',
+				$example_data->example_count,
+				l('View', 'textbook_companion/code/list_examples/' . $chapter_data->id)
+			);
+		} //$chapter_data = $chapter_q->fetchObject()
+		/* check if there are any chapters */
+		if (!$chapter_rows)
+		{
+			drupal_set_message(t('No uploads found.'), 'status');
+			return $return_html;
+		} //!$chapter_rows
+		$chapter_header = array(
+			'Chapter No.',
+			'Title of the Chapter',
+			'Uploaded Examples',
+			'Actions'
+		);
+		$return_html .= theme('table', array(
+			'header' => $chapter_header,
+			'rows' => $chapter_rows
+		)).'<br/>';
+		$submited_all_example = drupal_get_form("all_example_submitted_check_form", $preference_data->id);
+		$return_html .= drupal_render($submited_all_example);
+	}
 	return $return_html;
 }
 function list_examples()
