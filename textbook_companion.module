@@ -183,7 +183,7 @@ $items['manage_proposal/category/edit'] = array(
 	'file' => 'manage_proposal.inc'
 );
 
-/*************Manage Books*******************/
+/***************************MANAGE BOOKS*********************************************/
 	$items['manage_books'] = array(
 		'title' => 'Manage Book',
 		'description' => 'Manage Book',
@@ -227,7 +227,7 @@ $items['manage_proposal/category/edit'] = array(
 			'approve book proposal'
 		),
 		'type' => MENU_LOCAL_TASK,
-		'weight' => 2,
+		'weight' => 3,
 		'file' => 'manage_book.inc'
 	);
 	$items['manage_books/failed_books'] = array(
@@ -239,7 +239,7 @@ $items['manage_proposal/category/edit'] = array(
 			'approve book proposal'
 		),
 		'type' => MENU_LOCAL_TASK,
-		'weight' => 3,
+		'weight' => 4,
 		'file' => 'manage_book.inc'
 	);
 	$items['manage_books/approve'] = array(
@@ -263,7 +263,7 @@ $items['manage_proposal/category/edit'] = array(
 			'book_status_form'
 		),
 		'access arguments' => array(
-			'approve book proposal'
+			 'book proposal'
 		),
 		'type' => MENU_CALLBACK,
 		'file' => 'manage_book.inc'
@@ -281,9 +281,7 @@ $items['manage_proposal/category/edit'] = array(
 		'type' => MENU_CALLBACK,
 		'file' => 'manage_book.inc'
 	);
-/************************************************/
-
-
+/******************************END OF MANAGE BOOKS***********************************/
 	$items['code_approval'] = array(
 		'title' => 'Manage Code Approval',
 		'description' => 'Manage Code Approval',
@@ -433,10 +431,7 @@ $items['manage_proposal/category/edit'] = array(
 	$items['textbook_companion/code/edit'] = array(
 		'title' => 'Edit Example',
 		'description' => 'Edit Example',
-		'page callback' => 'drupal_get_form',
-		'page arguments' => array(
-			'upload_examples_edit_form'
-		),
+		'page callback' => 'upload_examples_edit',
 		'access arguments' => array(
 			'edit uploaded code'
 		),
@@ -448,7 +443,17 @@ $items['manage_proposal/category/edit'] = array(
 		'description' => 'Delete Example',
 		'page callback' => '_upload_examples_delete',
 		'access arguments' => array(
-			'upload code'
+			'delete code'
+		),
+		'type' => MENU_CALLBACK,
+		'file' => 'code.inc'
+	);
+	$items['textbook_companion/code/chapter/delete'] = array(
+		'title' => 'Delete Chapter',
+		'description' => 'Delete Chapter',
+		'page callback' => '_chapter_delete',
+		'access arguments' => array(
+			'delete chapter'
 		),
 		'type' => MENU_CALLBACK,
 		'file' => 'code.inc'
@@ -868,6 +873,10 @@ function textbook_companion_permission() {
     "edit uploaded code" => array(
       "title" => t("Edit uploaded code"),
       "description" => t("Allows users to edit uploaded code.")
+    ),
+		"delete chapter" => array(
+      "title" => t("Delete chapter"),
+      "description" => t("Allows users to delete chapter.")
     ),
     "download code" => array(
       "title" => t("Download code"),
