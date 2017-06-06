@@ -379,7 +379,7 @@ function bulk_approval_form($form, &$form_state)
 		'#type' => 'select',
 		'#title' => t('Example No. (Caption)'),
 		'#options' => _ajax_bulk_get_examples($chapter_default_value),
-		// '#default_value' => $example_default_value,       
+		// '#default_value' => $example_default_value,
 		'#validated' => TRUE,
 		'#prefix' => '<div id="ajax_selected_example">',
 		'#suffix' => '</div>',
@@ -475,7 +475,7 @@ function bulk_approval_form_submit($form, &$form_state)
 
 	if ($form_state['clicked_button']['#value'] == 'Submit')
 	{
-		$book_name_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = :book_id",array(":book_id"=>$form_state['values']['book'])); 
+		$book_name_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = :book_id",array(":book_id"=>$form_state['values']['book']));
 		$book_name= $book_name_q->fetchObject();
 		if ($form_state['values']['book'])
 			del_book_pdf($form_state['values']['book']);
@@ -484,7 +484,7 @@ function bulk_approval_form_submit($form, &$form_state)
 			if (($form_state['values']['book_actions'] == 1) && ($form_state['values']['chapter_actions'] == 0) && ($form_state['values']['example_actions'] == 0))
 			{
 				/* approving entire book */
-				/* $chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d", 
+				/* $chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d",
 				$form_state['values']['book']);*/
 				$query = db_select('textbook_companion_chapter');
 				$query->fields('textbook_companion_chapter');
@@ -572,7 +572,7 @@ Reason for dis-approval:
 				$query->fields('textbook_companion_dependency_files');
 				$query->condition('preference_id', $form_state['values']['book']);
 				$dep_q = $query->execute();
-				
+
 				if ($dep_data =$dep_q->fetchObject())
 				{
 				drupal_set_message(t("Cannot delete book since it has dependency files that can be used by others. First delete the dependency files before deleing the Book."), 'error');
@@ -607,7 +607,7 @@ Reason for dis-approval:
 					$preference_data = $result->fetchObject();
 					$book_name = $preference_data->book;
 					$proposal_id = $preference_data->proposal_id;
-					
+
 					drupal_set_message(t('Deleted Book Proposal.'), 'status');
 					/* email */
 					$email_subject = t('[scilab.in] Your uploaded examples including the book '. $book_name->book .' proposal have been deleted');
@@ -622,7 +622,7 @@ Reason for deletion:
 					$query = db_delete('textbook_companion_preference');
 					$query->condition('proposal_id', $proposal_id);
 					$num_deleted = $query->execute();
-					
+
 					/*db_query("DELETE FROM {textbook_companion_proposal} WHERE id = %d", $proposal_id);*/
 					$query = db_delete('textbook_companion_proposal');
 					$query->condition('id', $proposal_id);
@@ -745,6 +745,38 @@ Reason for dis-approval:
 ' . $form_state['values']['message'])
 				);
 			} //($form_state['values']['book_actions'] == 0) && ($form_state['values']['chapter_actions'] == 0) && ($form_state['values']['example_actions'] == 3)
+			else if($form_state['values']['book_actions'] == 5)
+			{
+				db_query('UPDATE textbook_companion_preference SET submited_all_examples_code = 0 WHERE id = :preference_id', array(
+					':preference_id' => $form_state['values']['book']
+				));
+				/* sending email */
+				// $query                = ("SELECT proposal_id FROM textbook_companion_preference WHERE id= :preference_id");
+				// $args                 = array(
+				// 	":preference_id" => $form_state['values'][':preference_id']
+				// );
+				// $proposal_data        = db_query($query, $args);
+				// $proposal_data_result = $proposal_data->fetchObject();
+				//
+				// $email_to                                   = $user->mail;
+				// $from                                       = variable_get('textbook_companion_from_email', '');
+				// $bcc                                        = variable_get('textbook_companion_emails', '');
+				// $cc                                         = variable_get('textbook_companion_cc_emails', '');
+				// $params['all_code_submitted']['proposal_id'] = $proposal_data_result->proposal_id;
+				// $params['all_code_submitted']['user_id']     = $user->uid;
+				// $params['all_code_submitted']['headers']     = array(
+				// 	'From' => $from,
+				// 	'MIME-Version' => '1.0',
+				// 	'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+				// 	'Content-Transfer-Encoding' => '8Bit',
+				// 	'X-Mailer' => 'Drupal',
+				// 	'Cc' => $cc,
+				// 	'Bcc' => $bcc
+				// );
+				// if (!drupal_mail('textbook_companion', 'all_code_submitted', $email_to, language_default(), $params, $from, TRUE))
+				// 	drupal_set_message('Error sending email message.', 'error');
+				drupal_set_message('Book is unlocked for code submission.', 'status');
+			}
 			/****** sending email when everything done ******/
 			if ($email_subject)
 			{
@@ -843,6 +875,7 @@ function _bulk_list_book_actions()
 	$book_actions[2] = 'Pending Review Entire Book';
 	$book_actions[3] = 'Dis-Approve Entire Book (This will delete all the examples in the book)';
 	$book_actions[4] = 'Delete Entire Book Including Proposal';
+	$book_actions[5] = 'Unlock the Book for code submission';
 	return $book_actions;
 }
 function _bulk_list_chapter_actions()
