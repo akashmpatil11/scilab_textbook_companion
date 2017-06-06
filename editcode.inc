@@ -679,9 +679,9 @@ function upload_examples_edit_form_submit($form, &$form_state)
 	$num_updated = $query->execute();
 	/* handling dependencies */
 	/*db_query("DELETE FROM {textbook_companion_example_dependency} WHERE example_id = %d", $example_data->id);*/
-	$query = db_delete('textbook_companion_example_dependency');
-	$query->condition('example_id', $example_data->id);
-	$num_deleted = $query->execute();
+	//$query = db_delete('textbook_companion_example_dependency');
+	//$query->condition('example_id', $example_data->id);
+	//$num_deleted = $query->execute();
 	if ($form_state['values']['existing_depfile']['dep_chapter_example_files'] != "0")
 	{
 		foreach ($form_state['values']['existing_depfile']['checkboxes_fieldset'] as $row)
