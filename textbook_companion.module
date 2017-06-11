@@ -451,7 +451,7 @@ $items['manage_proposal/category/edit'] = array(
 	$items['textbook_companion/code/chapter/delete'] = array(
 		'title' => 'Delete Chapter',
 		'description' => 'Delete Chapter',
-		'page callback' => '_chapter_delete',
+		'page callback' => 'chapter_delete',
 		'access arguments' => array(
 			'delete chapter'
 		),
