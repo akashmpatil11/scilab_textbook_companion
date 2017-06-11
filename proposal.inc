@@ -1888,7 +1888,7 @@ function book_proposal_nonaicte_form_submit($form, &$form_state)
 	$query = "
 INSERT INTO {textbook_companion_proposal}
     (uid, approver_uid, full_name, mobile, gender, how_project, course, branch, university, country, city, pincode, state, faculty, reviewer, reference, completion_date, creation_date, approval_date, proposal_status, message, scilab_version, operating_system, teacher_email, proposal_type, reason, samplefilepath,proposed_completion_date) VALUES (:uid, :approver_uid, :full_name, :mobile, :gender, :how_project, :course, :branch, :university, :country, :city, :pincode, :state,
-:faculty, :reviewer, :reference, :completion_date, :creation_date, :approval_date, :proposal_status, :message, :scilab_version,
+:faculty, :reviewer, :reference, :completion_date, :creation_date, :approval_date, :proposal_status, :new_proposal_status, :message, :scilab_version,
  :operating_system, :teacher_email, :proposal_type, :reason, :samplefilepath,:proposed_completion_date)
 ";
 	// $result = db_query($query);
@@ -1913,6 +1913,7 @@ INSERT INTO {textbook_companion_proposal}
 		":creation_date" => time(),
 		":approval_date" => time(),
 		":proposal_status" => 0,
+		":new_proposal_status" => 0,
 		":message" => 'None',
 		":scilab_version" => $scilab_version,
 		":operating_system" => _tbc_sentence_case($form_state['values']['operating_system']),
