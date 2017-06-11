@@ -16,12 +16,12 @@ function upload_examples_admin_edit_form($form, $form_state)
 	$query->range(0, 1);
 	$example_q = $query->execute();
 	$example_data = $example_q->fetchObject();
-	if (!$example_q)
-	{
-		drupal_set_message(t("Invalid example selected."), 'error');
-		drupal_goto('');
-		return;
-	} //!$example_q
+	// if (!$example_q)
+	// {
+	// 	drupal_set_message(t("Invalid example selected."), 'error');
+	// 	drupal_goto('');
+	// 	return;
+	// } //!$example_q
 	/* get examples files */
 	$source_file = "";
 	$source_id = 0;
@@ -80,12 +80,12 @@ function upload_examples_admin_edit_form($form, $form_state)
 	$query->condition('id', $example_data->chapter_id);
 	$result = $query->execute();
 	$chapter_data = $result->fetchObject();
-	if (!$chapter_data)
-	{
-		drupal_set_message(t("Invalid chapter selected."), 'error');
-		drupal_goto('');
-		return;
-	} //!$chapter_data
+	// if (!$chapter_data)
+	// {
+	// 	drupal_set_message(t("Invalid chapter selected."), 'error');
+	// 	drupal_goto('');
+	// 	return;
+	// } //!$chapter_data
 	/* get preference details */
 	/*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = %d", $chapter_data->preference_id);
 	$preference_data = db_fetch_object($preference_q);*/
@@ -94,12 +94,12 @@ function upload_examples_admin_edit_form($form, $form_state)
 	$query->condition('id', $chapter_data->preference_id);
 	$result = $query->execute();
 	$preference_data = $result->fetchObject();
-	if (!$preference_data)
-	{
-		drupal_set_message(t("Invalid book selected."), 'error');
-		drupal_goto('');
-		return;
-	} //!$preference_data
+	// if (!$preference_data)
+	// {
+	// 	drupal_set_message(t("Invalid book selected."), 'error');
+	// 	drupal_goto('');
+	// 	return;
+	// } //!$preference_data
 	/* get proposal details */
 	/*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE id = %d", $preference_data->proposal_id);
 	$proposal_data = db_fetch_object($proposal_q);*/
@@ -108,17 +108,17 @@ function upload_examples_admin_edit_form($form, $form_state)
 	$query->condition('id', $preference_data->proposal_id);
 	$result = $query->execute();
 	$proposal_data = $result->fetchObject();
-	if (!$proposal_data)
-	{
-		drupal_set_message(t("Invalid proposal selected."), 'error');
-		drupal_goto('');
-		return;
-	} //!$proposal_data
+	// if (!$proposal_data)
+	// {
+	// 	drupal_set_message(t("Invalid proposal selected."), 'error');
+	// 	drupal_goto('');
+	// 	return;
+	// } //!$proposal_data
 	$user_data = user_load($proposal_data->uid);
 	/* add javascript for automatic book title, check if example uploaded, dependency selection effects */
 	/* $chapter_name_js = " $(document).ready(function() {
 	$('#edit-existing-depfile-dep-book-title').change(function() {
-	var dep_selected = ''; 
+	var dep_selected = '';
 	/* showing and hiding relevant files */
 	/*   $('.form-checkboxes .option').hide();
 	$('.form-checkboxes .option').each(function(index) {
@@ -133,7 +133,7 @@ function upload_examples_admin_edit_form($form, $form_state)
 	/* showing list of already existing dependencies */
 	/* $('#existing_depfile_selected').html(dep_selected);
 	});
-	
+
 	$('.form-checkboxes .option').change(function() {
 	$('#edit-existing-depfile-dep-book-title').trigger('change');
 	});
@@ -253,20 +253,68 @@ function upload_examples_admin_edit_form($form, $form_state)
 		'#title' => t('Existing Dependency Files Selected'),
 		'#markup' => '<div id="existing_depfile_selected"></div>'
 	);
-	$form['existing_depfile']['dep_book_title'] = array(
-		'#type' => 'select',
-		'#title' => t('Title of the Book'),
-		'#options' => _list_of_book_titles()
-	);
-	list($files_options, $files_options_class) = _list_of_book_dependency_files();
+	// $form['existing_depfile']['dep_book_title'] = array(
+	// 	'#type' => 'select',
+	// 	'#title' => t('Title of the Book'),
+	// 	'#options' => _list_of_book_titles()
+	// );
+	// list($files_options, $files_options_class) = _list_of_book_dependency_files();
+	// $form['existing_depfile']['dep_chapter_example_files'] = array(
+	// 	'#type' => 'checkboxes',
+	// 	'#title' => t('Dependency Files'),
+	// 	'#options' => $files_options,
+	// 	'#options_class' => $files_options_class,
+	// 	'#multiple' => TRUE,
+	// 	'#default_value' => $dependency_files
+	// );
 	$form['existing_depfile']['dep_chapter_example_files'] = array(
-		'#type' => 'checkboxes',
-		'#title' => t('Dependency Files'),
-		'#options' => $files_options,
-		'#options_class' => $files_options_class,
-		'#multiple' => TRUE,
-		'#default_value' => $dependency_files
+		'#type' => 'select',
+		'#title' => t('Completed Books'),
+		//	#empty_value' => 0,
+		'#empty_option' => "-Select-",
+		'#options' => completed_book(),
+		'#ajax' => array(
+      'callback' => 'ajax_checkboxes_callback',
+      'wrapper' => 'checkboxes-div',
+     ),
+		'#multiple' => FALSE,
 	);
+	$form['existing_depfile']['checkboxes_fieldset'] = array(
+		'#prefix' => '<div id="checkboxes-div">',
+		'#suffix' => '</div>',
+		'#type' => 'checkboxes',
+		'#title' => 'Dependency files for selected book.',
+	);
+
+	if(isset($form_state['values']['existing_depfile']['dep_chapter_example_files']))
+	{
+		$val = $form_state['values']['existing_depfile']['dep_chapter_example_files'];
+		if($val != 0)
+		{
+			$query = db_query('SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = (:preference_id)', array(':preference_id' => $val));
+			$option_list = array();
+			$row = $query->rowCount();
+			if ($row == 0)
+			{
+				$form['existing_depfile']['checkboxes_fieldset']['empty'] = array(
+					'#type' => 'item',
+					'#markup' => 'This lab has no dependency files.'
+				);
+			}
+			else {
+				$dependency_options_list = array();
+				while ($curr_val = $query->fetchObject()) {
+					// $form['checkboxes_fieldset']["checkbox$cnt"] = array(
+					// 	'#type' => 'checkbox',
+					// 	'#title' => $curr_val->filename,
+					// 	'#return_value' => $curr_val->id,
+					// );
+					$dependency_options_list[$curr_val->id] = $curr_val->filename;
+				}
+			}
+			$form['existing_depfile']['checkboxes_fieldset']['#options'] = $dependency_options_list;
+		}
+	}
 	$form['existing_depfile']['dep_upload'] = array(
 		'#type' => 'item',
 		'#markup' => l('Upload New Depedency Files', 'textbook_companion/code/upload_dep')
@@ -490,7 +538,7 @@ function upload_examples_admin_edit_form_validate($form, &$form_state)
       });
     });
     $('#edit-existing-depfile-dep-book-title').change(function() {
-      var dep_selected = ''; 
+      var dep_selected = '';
       /* showing and hiding relevant files */
       $('.form-checkboxes .option').hide();
       $('.form-checkboxes .option').each(function(index) {
@@ -596,34 +644,59 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
 	$num_updated = $query->execute();
 	/* handling dependencies */
 	/*db_query("DELETE FROM {textbook_companion_example_dependency} WHERE example_id = %d", $example_data->id);*/
-	$query = db_delete('textbook_companion_example_dependency');
-	$query->condition('example_id', $example_data->id);
-	$num_deleted = $query->execute();
-	foreach ($form_state['values']['existing_depfile']['dep_chapter_example_files'] as $row)
+	// $query = db_delete('textbook_companion_example_dependency');
+	// $query->condition('example_id', $example_data->id);
+	// $num_deleted = $query->execute();
+	// foreach ($form_state['values']['existing_depfile']['dep_chapter_example_files'] as $row)
+	// {
+	// 	if ($row > 0)
+	// 	{
+	// 		/* insterting into database */
+	// 		/*db_query("INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
+	// 		VALUES (%d, %d, %d, %d)",
+	// 		$example_data->id,
+	// 		$row,
+	// 		0,
+	// 		time()
+	// 		);*/
+	// 		$query = "INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
+  //       VALUES (:example_id, :dependency_id, :approval_status, :timestamp)";
+	// 		$args = array(
+	// 			":example_id" => $example_data->id,
+	// 			":dependency_id" => $row,
+	// 			":approval_status" => 0,
+	// 			"::timestamp" => time()
+	// 		);
+	// 		$result = db_query($query, $args, array(
+	// 			'return' => Database::RETURN_INSERT_ID
+	// 		));
+	// 	} //$row > 0
+	// } //$form_state['values']['existing_depfile']['dep_chapter_example_files'] as $row
+	//$query = db_delete('textbook_companion_example_dependency');
+	//$query->condition('example_id', $example_data->id);
+	//$num_deleted = $query->execute();
+	if ($form_state['values']['existing_depfile']['dep_chapter_example_files'] != "0")
 	{
-		if ($row > 0)
+		foreach ($form_state['values']['existing_depfile']['checkboxes_fieldset'] as $row)
 		{
-			/* insterting into database */
-			/*db_query("INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
-			VALUES (%d, %d, %d, %d)",
-			$example_data->id,
-			$row,
-			0,
-			time()
-			);*/
-			$query = "INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
-        VALUES (:example_id, :dependency_id, :approval_status, :timestamp)";
-			$args = array(
-				":example_id" => $example_data->id,
-				":dependency_id" => $row,
-				":approval_status" => 0,
-				"::timestamp" => time()
-			);
-			$result = db_query($query, $args, array(
-				'return' => Database::RETURN_INSERT_ID
-			));
-		} //$row > 0
-	} //$form_state['values']['existing_depfile']['dep_chapter_example_files'] as $row
+			if ($row > 0)
+			{
+				$query = "INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
+	        VALUES (:example_id, :dependency_id, :approval_status, :timestamp)";
+				$args = array(
+					":example_id" => $example_data->id,
+					":dependency_id" => $row,
+					":approval_status" => 0,
+					":timestamp" => time()
+				);
+				$result = db_query($query, $args, array(
+					'return' => Database::RETURN_INSERT_ID
+				));
+			} //$row > 0
+		}
+		drupal_set_message(t('Dependency Added Successfully'), 'status');
+		drupal_goto('code_approval');
+	}
 	/* handle source file */
 	$cur_file_id = $form_state['values']['cur_source_file_id'];
 	if ($cur_file_id > 0)
@@ -1066,4 +1139,27 @@ function _list_of_book_dependency_files()
 		$book_dependency_files,
 		$book_dependency_files_class
 	);
+}
+/**
+ *function returning completed books
+ */
+function completed_book()
+{
+	$book_options_list = array();
+	$preference_q = db_query("SELECT DISTINCT preference_id FROM textbook_companion_dependency_files");
+	while($preference_data = $preference_q->fetchObject()) {
+		$query = db_select('textbook_companion_preference');
+		$query->fields('textbook_companion_preference');
+		$query->condition('id', $preference_data->preference_id);
+		$query->orderBy('book', 'ASC');
+		$query = $query->execute();
+		$book_data = $query->fetchObject();
+		if($book_data->book)
+			$book_options_list[$preference_data->preference_id] = $book_data->book;
+	}
+	return $book_options_list;
+}
+function ajax_checkboxes_callback($form, &$form_state)
+{
+	return $form['existing_depfile']['checkboxes_fieldset'];
 }
