@@ -205,6 +205,8 @@ function proposal_approval_form($form, &$form_state)
 	/*$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 and id = %d", $proposal_id);*/
 	$query = db_select('textbook_companion_proposal');
 	$query->fields('textbook_companion_proposal');
+	//need to be removed
+	//$query->condition('proposal_status', 0);
 	$query->condition('new_proposal_status', 0);
 	$query->condition('id', $proposal_id);
 	$result = $query->execute();
@@ -473,7 +475,7 @@ function proposal_approval_form_submit($form, &$form_state)
 	if ($form_state['values']['disapprove'])
 	{
 		//var_dump(array(':approver_uid' => $user->uid,':approver_date'=> time(), ':message' => $form_state['values']['message'], ':id' =>$proposal_id));die;
-		db_query("UPDATE {textbook_companion_proposal} SET approver_uid = :approver_uid, approval_date = :approval_date, proposal_status = 2, message = :message WHERE id = :id", array(
+		db_query("UPDATE {textbook_companion_proposal} SET approver_uid = :approver_uid, approval_date = :approval_date, proposal_status = 2,new_proposal_status = 2, message = :message WHERE id = :id", array(
 			':approver_uid' => $user->uid,
 			':approval_date' => time(),
 			':message' => $form_state['values']['message'],
@@ -523,7 +525,8 @@ function proposal_approval_form_submit($form, &$form_state)
 	$query->fields(array(
 		'approver_uid' => $user->uid,
 		'approval_date' => time(),
-		'new_proposal_status' => 1
+		'proposal_status' => 1,
+		'new_proposal_status' => 1,
 	));
 	$query->condition('id', $proposal_id);
 	$num_updated = $query->execute();
@@ -791,6 +794,7 @@ function proposal_status_form_submit($form, &$form_state)
 		$query = db_update('textbook_companion_proposal');
 		$query->fields(array(
 			'proposal_status' => 3,
+			//book_status => 'completed'
 			'completion_date' => time()
 		));
 		$query->condition('id', $proposal_id);
@@ -1523,6 +1527,28 @@ function proposal_edit_form_submit($form, &$form_state)
 		));
 		$query->condition('id', $preference1_id);
 		$num_updated = $query->execute();
+		/**
+		*Sending mail to user about updating proposal
+		*/
+		$book_user = user_load($row->uid);
+		$email_to = $book_user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_emails', '');
+		$cc = variable_get('textbook_companion_cc_emails', '');
+		$params['proposal_edit']['proposal_id'] = $proposal_id;
+		$params['proposal_edit']['user_id'] = $row->uid;
+		$params['proposal_edit']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion', 'proposal_edit', $email_to, language_default(), $params, $from, TRUE))
+			drupal_set_message('Error sending email message.', 'error');
+		drupal_set_message('Book proposal Updated. User has been notified of the editing.', 'status');
 	} //$preference1_data
 	if ($preference2_data)
 	{
@@ -1539,6 +1565,28 @@ function proposal_edit_form_submit($form, &$form_state)
 		));
 		$query->condition('id', $preference2_id);
 		$num_updated = $query->execute();
+		/**
+		*Sending mail to user about updating proposal
+		*/
+		$book_user = user_load($row->uid);
+		$email_to = $book_user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_emails', '');
+		$cc = variable_get('textbook_companion_cc_emails', '');
+		$params['proposal_edit']['proposal_id'] = $proposal_id;
+		$params['proposal_edit']['user_id'] = $row->uid;
+		$params['proposal_edit']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion', 'proposal_edit', $email_to, language_default(), $params, $from, TRUE))
+			drupal_set_message('Error sending email message.', 'error');
+		drupal_set_message('Book proposal Updated. User has been notified of the editing.', 'status');
 	} //$preference2_data
 	if ($preference3_data)
 	{
@@ -1555,9 +1603,31 @@ function proposal_edit_form_submit($form, &$form_state)
 		));
 		$query->condition('id', $preference3_id);
 		$num_updated = $query->execute();
+		/**
+		*Sending mail to user about updating proposal
+		*/
+		$book_user = user_load($row->uid);
+		$email_to = $book_user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_emails', '');
+		$cc = variable_get('textbook_companion_cc_emails', '');
+		$params['proposal_edit']['proposal_id'] = $proposal_id;
+		$params['proposal_edit']['user_id'] = $row->uid;
+		$params['proposal_edit']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion', 'proposal_edit', $email_to, language_default(), $params, $from, TRUE))
+			drupal_set_message('Error sending email message.', 'error');
+		drupal_set_message('Book proposal Updated. User has been notified of the editing.', 'status');
 	} //$preference3_data
-	drupal_set_message(t('Proposal Updated'), 'status');
-	drupal_goto('manage_proposal/');
+	drupal_goto('manage_proposal/all');
+	return;
 }
 /******************************************************************************/
 /**************************** CATEGORY EDIT FORM ******************************/
@@ -1867,6 +1937,7 @@ function _failed_all($preference_id = 0, $confirm = "")
       LEFT JOIN users usr ON usr.uid = pro.uid
       WHERE pro.proposal_status = 1 AND pre.approval_status = 1 AND pro.completion_date < :completion_date
       ORDER BY failed_reminder
+
     ";
 		$result = db_query($query, array(
 			':completion_date' => time()
