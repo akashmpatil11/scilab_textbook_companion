@@ -701,8 +701,7 @@ function upload_examples_edit_form_submit($form, &$form_state)
 				));
 			} //$row > 0
 		}
-		drupal_set_message(t('Dependency Added Successfully'), 'status');
-		drupal_goto('textbook_companion/code');
+		drupal_set_message(t('Dependency Added successfully.'), 'status');
 	}
 	/* handle source file */
 	$cur_file_id = $form_state['values']['cur_source_file_id'];
@@ -1304,6 +1303,15 @@ function edit_chapter_title_form_submit($form, &$form_state)
 	));
 	$query->condition('id', $chapter_id);
 	$num_updated = $query->execute();
+	/* sending email */
+	$email_to = $user->mail;
+	$from = variable_get('textbook_companion_from_email', '');
+	$bcc = variable_get('textbook_companion_emails', '');
+	$cc = variable_get('textbook_companion_cc_emails', '');
+	$param['chapter_title_updated']['chapter_id'] = $chapter_data->id;
+	$param['chapter_title_updated']['user_id'] = $user->uid;
+	if (!drupal_mail('textbook_companion', 'chapter_title_updated', $email_to, language_default(), $param, variable_get('textbook_companion_from_email', NULL), TRUE))
+		drupal_set_message('Error sending email message.', 'error');
 	drupal_set_message(t('Title of the Chapter updated.'), 'status');
 	drupal_goto('textbook_companion/code');
 }
@@ -1363,7 +1371,9 @@ function _list_of_book_dependency_files()
 		$book_dependency_files_class
 	);
 }
-/*function to return list of completed books*/
+/**
+ *function to return list of completed books
+ */
 function completed_book()
 {
 	$book_options_list = array();
