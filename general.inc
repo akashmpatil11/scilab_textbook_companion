@@ -18,7 +18,21 @@ function list_chapters()
 		drupal_set_message("Please submit a " . l('proposal', 'proposal') . ".", 'error');
 		drupal_goto('');
 	} //!$proposal_data
-	if ($proposal_data->proposal_status != 1 && $proposal_data->proposal_status != 4)
+	$query = db_select('textbook_companion_preference');
+	$query->fields('textbook_companion_preference');
+	$query->condition('proposal_id', $proposal_data->id);
+	$query->condition('approval_status', 1);
+	$query->range(0, 1);
+	$result = $query->execute();
+	$preference_data = $result->fetchObject();
+	if (!$preference_data)
+	{
+		drupal_set_message(t('Invalid Book Preference status. Please contact site administrator for further information.'), 'error');
+		drupal_goto('');
+		return;
+	} //!$preference_data
+	//need to changed according to new_proposal_status and book_status
+	if ($proposal_data->proposal_status != 1 && $preference_data->book_status != 3)
 	{
 		switch ($proposal_data->proposal_status)
 		{
@@ -43,22 +57,25 @@ function list_chapters()
 				return;
 				break;
 		} //$proposal_data->proposal_status
+		// switch($proposal_data->new_proposal_status)
+		// {
+		// 	case 0:
+		// 		drupal_set_message(t('We have already received your proposal. We will get back to you soon.'), 'status');
+		// 		drupal_goto('');
+		// 		return;
+		// 		break;
+		// 	case 2:
+		// 		drupal_set_message(t('Your proposal has been dis-approved. Please create another proposal ' . l('here', 'proposal') . '.'), 'error');
+		// 		drupal_goto('');
+		// 		return;
+		// 		break;
+		// 	default:
+		// 			drupal_set_message(t('Invalid proposal state. Please contact site administrator for further information.'), 'error');
+		// 			drupal_goto('');
+		// 			return;
+		// 			break;
+		// }
 	} //$proposal_data->proposal_status != 1 && $proposal_data->proposal_status != 4
-	/*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = %d AND approval_status = 1 LIMIT 1", $proposal_data->id);
-	$preference_data = db_fetch_object($preference_q);*/
-	$query = db_select('textbook_companion_preference');
-	$query->fields('textbook_companion_preference');
-	$query->condition('proposal_id', $proposal_data->id);
-	$query->condition('approval_status', 1);
-	$query->range(0, 1);
-	$result = $query->execute();
-	$preference_data = $result->fetchObject();
-	if (!$preference_data)
-	{
-		drupal_set_message(t('Invalid Book Preference status. Please contact site administrator for further information.'), 'error');
-		drupal_goto('');
-		return;
-	} //!$preference_data
 	/************************ end approve book details **************************/
 	if($preference_data->submited_all_examples_code)
 	{
@@ -411,31 +428,33 @@ function all_example_submitted_check_form_submit($form, &$form_state, $preferenc
 		db_query('UPDATE textbook_companion_preference SET submited_all_examples_code = 1 WHERE id = :preference_id', array(
 			':preference_id' => $form_state['values']['preference_id']
 		));
-		/* sending email */
-		// $query                = ("SELECT proposal_id FROM textbook_companion_preference WHERE id= :preference_id");
-		// $args                 = array(
-		// 	":preference_id" => $form_state['values'][':preference_id']
-		// );
-		// $proposal_data        = db_query($query, $args);
-		// $proposal_data_result = $proposal_data->fetchObject();
-		//
-		// $email_to                                   = $user->mail;
-		// $from                                       = variable_get('textbook_companion_from_email', '');
-		// $bcc                                        = variable_get('textbook_companion_emails', '');
-		// $cc                                         = variable_get('textbook_companion_cc_emails', '');
-		// $params['all_code_submitted']['proposal_id'] = $proposal_data_result->proposal_id;
-		// $params['all_code_submitted']['user_id']     = $user->uid;
-		// $params['all_code_submitted']['headers']     = array(
-		// 	'From' => $from,
-		// 	'MIME-Version' => '1.0',
-		// 	'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
-		// 	'Content-Transfer-Encoding' => '8Bit',
-		// 	'X-Mailer' => 'Drupal',
-		// 	'Cc' => $cc,
-		// 	'Bcc' => $bcc
-		// );
-		// if (!drupal_mail('textbook_companion', 'all_code_submitted', $email_to, language_default(), $params, $from, TRUE))
-		// 	drupal_set_message('Error sending email message.', 'error');
+		/**
+		*Sending mail to user about Submission Locking
+		*/
+		$query = db_select('textbook_companion_proposal');
+		$query->fields('textbook_companion_proposal');
+		$query->condition('id', $form_state['values']['preference_id']);
+		$result = $query->execute();
+		$proposal_data = $result->fetchObject();
+		$book_user = user_load($proposal_data->uid);
+		$email_to = $book_user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_emails', '');
+		$cc = variable_get('textbook_companion_cc_emails', '');
+		$params['all_example_submitted']['preference_id'] = $form_state['values']['preference_id'];
+		$params['all_example_submitted']['user_id'] = $propasal_data->uid;
+		$params['all_example_submitted']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion', 'all_example_submitted', $email_to, language_default(), $params, $from, TRUE))
+			drupal_set_message('Error sending email message.', 'error');
+		drupal_set_message('Code Submission is locked. You can not upload or change code anymore. Mail is sent to you.', 'status');
 	} //$form_state['values']['all_example_submitted'] == 1
 	$root_path = textbook_companion_path();
 	$book_path = $root_path.$form_state['values']['preference_id'];
