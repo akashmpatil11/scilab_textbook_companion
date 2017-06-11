@@ -521,6 +521,63 @@ FOSSEE, IIT Bombay', array(
 				))
 			);
 			break;
+		case 'proposal_edit':
+			$query = db_select('textbook_companion_proposal');
+			$query->fields('textbook_companion_proposal');
+			$query->condition('id', $params['proposal_edit']['proposal_id']);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$proposal_data = $result->fetchObject();
+			$query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('proposal_id', $params['proposal_edit']['proposal_id']);
+			$query->condition('approval_status', 1);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$approved_preference_data = $result->fetchObject();
+			$user_data = user_load($params['proposal_edit']['user_id']);
+			$message['headers'] = $params['proposal_edit']['headers'];
+			$message['subject'] = t('[!site_name] Your book proposal has been edited', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+	Dear !user_name,
+
+	Your following book proposal details has been updated:
+
+	Full Name : ' . $proposal_data->full_name . '
+	Email : ' . $user_data->mail . '
+	Mobile : ' . $proposal_data->mobile . '
+	Course : ' . $proposal_data->course . '
+	Department/Branch : ' . $proposal_data->branch . '
+	University/Institute : ' . $proposal_data->university . '
+	College Teacher / Professor : ' . $proposal_data->faculty . '
+	Reviewer : ' . $proposal_data->reviewer . '
+	Expected date of completion : ' . date('d-m-Y', $proposal_data->proposed_completion_date) . '
+
+	Title of the book : ' . $approved_preference_data->book . '
+	Author name : ' . $approved_preference_data->author . '
+	ISBN No. : ' . $approved_preference_data->isbn . '
+	Publisher and Place : ' . $approved_preference_data->publisher . '
+	Edition : ' . $approved_preference_data->edition . '
+	Year of publication : ' . $approved_preference_data->year . '
+
+	Please contact us by sending an e-mail to textbook@scilab.in in case you wish to cancel this book proposal.
+
+	Best Wishes,
+
+	Scilab TBC Team,
+	FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
 		case 'proposal_completed':
 			// bcc to textbook_companion_emails
 			//$message['headers'] += $tbc_bcc_emails;
@@ -589,6 +646,117 @@ FOSSEE, IIT Bombay', array(
 				))
 			);
 			break;
+		/**
+			*Adding mail details for editing book details
+			*/
+		case 'book_edit':
+			$query = db_select('textbook_companion_proposal');
+			$query->fields('textbook_companion_proposal');
+			$query->condition('id', $params['book_edit']['proposal_id']);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$proposal_data = $result->fetchObject();
+			$query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $params['book_edit']['preference_id']);
+			$result = $query->execute();
+			$approved_preference_data = $result->fetchObject();
+			$user_data = user_load($params['book_edit']['user_id']);
+			$message['headers'] = $params['book_edit']['headers'];
+			$message['subject'] = t('[!site_name] Your book details has been updated', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+	Dear !user_name,
+
+	Your following book details has been updated:
+
+	Full Name : ' . $proposal_data->full_name . '
+	Reviewer : ' . $proposal_data->reviewer . '
+	Expected date of completion : ' . date('d-m-Y', $proposal_data->proposed_completion_date) . '
+
+	Title of the book : ' . $approved_preference_data->book . '
+	Author name : ' . $approved_preference_data->author . '
+	ISBN No. : ' . $approved_preference_data->isbn . '
+	Publisher and Place : ' . $approved_preference_data->publisher . '
+	Edition : ' . $approved_preference_data->edition . '
+	Year of publication : ' . $approved_preference_data->year . '
+
+	Please contact us by sending an e-mail to textbook@scilab.in in case you wish to cancel this book proposal.
+
+	Regards,
+
+	Scilab TBC Team,
+	FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+			/**
+				*Adding mail details for status update book details
+				*/
+			case 'book_status_updated':
+				$query = db_select('textbook_companion_preference');
+				$query->fields('textbook_companion_preference');
+				$query->condition('id', $params['book_status_updated']['preference_id']);
+				$result = $query->execute();
+				$preference_data = $result->fetchObject();
+				$book_status = '';
+				switch ($preference_data->book_status)
+				{
+					case 0:
+						$book_status = 'In Progress';
+						break;
+					case 1:
+						$book_status = 'Under Review';
+						break;
+					case 2:
+						$book_status = 'Approved';
+						break;
+					case 3:
+						$book_status = 'Completed';
+						break;
+					case 4:
+						$book_status = 'Disabled';
+						break;
+					default:
+						$book_status = 'Unknown';
+						break;
+				}
+				$user_data = user_load($params['book_status_updated']['user_id']);
+				$message['headers'] = $params['book_status_updated']['headers'];
+				$message['subject'] = t('[!site_name] Your book status has been changed.', array(
+					'!site_name' => variable_get('site_name', '')
+				), array(
+					'language' => $language->language
+				));
+				$message['body'] = array(
+					'body' => t('
+		Dear !user_name,
+
+		Your following book status has been updated:
+
+		Title of the book : ' . $preference_data->book . '
+		Author name : ' . $preference_data->author . '
+		Status :'. $book_status.'
+
+		Regards,
+
+		Scilab TBC Team,
+		FOSSEE, IIT Bombay', array(
+						'!site_name' => variable_get('site_name', ''),
+						'!user_name' => $user_data->name
+					), array(
+						'language' => $language->language
+					))
+				);
+				break;
 		case 'example_uploaded':
 			// bcc to textbook_companion_emails
 			//$message['headers'] += $tbc_bcc_emails;
@@ -864,6 +1032,45 @@ FOSSEE, IIT Bombay', array(
 				))
 			);
 			break;
+		/**
+			*Mail content for locking book
+			*/
+		case 'all_example_submitted':
+			$query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $params['all_example_submitted']['preference_id']);
+			$result = $query->execute();
+			$preference_data = $result->fetchObject();
+			$user_data = user_load($params['all_example_submitted']['user_id']);
+			$message['headers'] = $params['all_example_submitted']['headers'];
+			$message['subject'] = t('[!site_name] Your have locked the submission for your book.', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+	Dear !user_name,
+
+	Your following book code submission has been locked:
+
+	Title of the book : ' . $preference_data->book . '
+	Author name : ' . $preference_data->author . '
+
+	You can not upload examples any more. Book will be sent to checking.
+
+	Regards,
+
+	Scilab TBC Team,
+	FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+
 		case 'feedback_received':
 			// bcc to textbook_companion_emails
 			// $message['headers'] += $tbc_bcc_emails;
@@ -898,6 +1105,112 @@ FOSSEE, IIT Bombay', array(
 				))
 			);
 			break;
+		case 'chapter_title_updated':
+			// bcc to textbook_companion_emails
+			//$message['headers'] += $tbc_bcc_emails;
+			/*$example_q = db_query("SELECT * FROM {textbook_companion_example} WHERE id = %d LIMIT 1", $params['example_updated']['example_id']);
+			$example_data = db_fetch_object($example_q);*/
+			$query = db_select('textbook_companion_chapter');
+			$query->fields('textbook_companion_chapter');
+			$query->condition('id', $example_data->chapter_id);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$chapter_data = $result->fetchObject();
+			$query = db_select('textbook_companion_preference');
+			$query->fields('textbook_companion_preference');
+			$query->condition('id', $chapter_data->preference_id);
+			$query->range(0, 1);
+			$result = $query->execute();
+			$preference_data = $result->fetchObject();
+			$user_data = user_load($params['chapter_title_updated']['user_id']);
+			$message['headers'] = $params['chapter_updated']['headers'];
+			$message['subject'] = t('[!site_name] You have changed the chapter name', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+You have updated the following chapter:
+
+Title of the book : ' . $preference_data->book . '
+Title of the chapter : ' . $chapter_data->name . '
+
+The example is still under review. You will be notified when it has been approved.
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+
+		case 'chapter_deleted_user':
+			// bcc to textbook_companion_emails
+			// $message['headers'] += $tbc_bcc_emails;
+			$user_data = user_load($params['chapter_deleted_user']['user_id']);
+			$message['headers'] = $params['chapter_deleted_user']['headers'];
+			$message['subject'] = t('[!site_name] User has deleted pending example', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+Your following chapter has been deleted by you :
+
+Title of the Book : ' . $params['chapter_deleted_user']['book_title'] . '
+Title of the Chapter : ' . $params['chapter_deleted_user']['chapter_title'] .'
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
+		case 'dependency_uploaded':
+			// bcc to textbook_companion_emails
+			//$message['headers'] += $tbc_bcc_emails;
+			$user_data = user_load($params['dependency_uploaded']['user_id']);
+			$message['headers'] = $params['example_deleted_user']['headers'];
+			$dependency_files = implode(',', $params['dependency_uploaded']['dependency_names']);
+			$message['subject'] = t('[!site_name] You have uploaded dependency file', array(
+				'!site_name' => variable_get('site_name', '')
+			), array(
+				'language' => $language->language
+			));
+			$message['body'] = array(
+				'body' => t('
+Dear !user_name,
+
+You have uploaded following dependency files :
+    ' . $dependency_files . '
+
+Best Wishes,
+
+Scilab TBC Team,
+FOSSEE, IIT Bombay', array(
+					'!site_name' => variable_get('site_name', ''),
+					'!user_name' => $user_data->name
+				), array(
+					'language' => $language->language
+				))
+			);
+			break;
 		case 'internshipform':
 			// bcc to textbook_companion_emails
 			//$message['headers'] += $tbc_bcc_emails;
@@ -912,7 +1225,7 @@ FOSSEE, IIT Bombay', array(
 				'body' => t('
 Dear !user_name,
 
-We have received your Internship Form Application for the book 
+We have received your Internship Form Application for the book
 
 Title of the Book: ' . $params['internshipform']['book_title'] . '
 Title of the Chapter: ' . $params['internshipform']['chapter_number'] . ' ' . $params['internshipform']['chapter_title'] . '
@@ -943,7 +1256,7 @@ FOSSEE, IIT Bombay', array(
 				'body' => t('
 Dear !user_name,
 
-We have received your Copyright Form Application for the book 
+We have received your Copyright Form Application for the book
 
 Title of the Book: ' . $params['copyrighttransferform']['book_title'] . '
 Title of the Chapter: ' . $params['copyrighttransferform']['chapter_number'] . ' ' . $params['copyrighttransferform']['chapter_title'] . '
@@ -974,7 +1287,7 @@ FOSSEE, IIT Bombay', array(
 				'body' => t('
 Dear !user_name,
 
-We have received your Undertaking Form Application for the book 
+We have received your Undertaking Form Application for the book
 
 Title of the Book: ' . $params['undertakingform']['book_title'] . '
 Title of the Chapter: ' . $params['undertakingform']['chapter_number'] . ' ' . $params['undertakingform']['chapter_title'] . '
