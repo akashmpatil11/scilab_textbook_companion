@@ -124,20 +124,15 @@ $(document).ready(function(){
 		'#markup' => $proposal_data->full_name,
 		'#title' => t('Contributor Name')
 	);
-	/*
-	$options = array(
-		'' => '(Select)'
-	);
-	for ($i = 1; $i <= 100; $i++)
-	{
-		$options[$i] = $i;
-	} //$i = 1; $i <= 100; $i++
-	*/
-	/*existing chapters saved in $options*/
+	/**
+	 *Existing chapters saved in $options
+	 */
 	$options = array(
 		'' => 'select',
 	);
-	/*'New Chpater' option for entering new chapter*/
+	/**
+	 *'New Chpater' option for entering new chapter
+	 */
 	$options[0] = 'New Chapter';
 	$chapter_description = array(
 		'chapter_number' => 'chapter_name'
@@ -145,14 +140,15 @@ $(document).ready(function(){
 	$query = db_select('textbook_companion_chapter');
 	$query->fields('textbook_companion_chapter');
 	$query->condition('preference_id', $preference_data->id);
-	//$query->condition('number', $form_state['values']['number']);
 	$chapter_result = $query->execute();
 	while($data = $chapter_result->fetchObject()){
 		$options[$data->number] = $data->number;
 		$chapter_description[$data->number] = $data->name;
 	}
-	/*If existing chapter selected, automatically 'name' field will be filled by chapter name*/
-	/*Else textfiled field will be popup, for entering chapter */
+	/**
+	 *If existing chapter selected, automatically 'name' field will be filled by chapter name
+	 *Else textfiled field will be popup, for entering chapter
+	 */
 	$form['number'] = array(
 		'#type' => 'select',
 		'#title' => t('Chapter No'),
@@ -236,8 +232,7 @@ $(document).ready(function(){
 		'#type' => 'item',
 		'#title' => t('Dependency Files')
 	);
-	/************ START OF EXISTING DEPENDENCIES **************/
-	/* existing dependencies */
+	/********************* START OF EXISTING DEPENDENCIES ***********************/
 	$form['existing_depfile'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Use Already Existing Dependency Files'),
@@ -276,7 +271,7 @@ $(document).ready(function(){
 		'#type' => 'item',
 		'#markup' => '<hr style="color:red">' . l('Upload New Depedency Files', 'textbook_companion/code/upload_dep')
 	);
-	/************ END OF EXISTING DEPENDENCIES **************/
+	/************************ END OF EXISTING DEPENDENCIES **********************/
 	$form['result'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Result Files'),
@@ -327,7 +322,9 @@ $(document).ready(function(){
 	);
 	return $form;
 }
-/*upload exanple form validation*/
+/**
+ *upload exanple form validation
+ */
 function upload_examples_form_validate($form, &$form_state)
 {
 	if($form_state['values']['number'] == '0') {
@@ -510,14 +507,16 @@ function upload_examples_form_submit($form, &$form_state)
 		);
 		$chapter_id = db_last_insert_id('textbook_companion_chapter', 'id'); */
 		$query = "INSERT INTO {textbook_companion_chapter} (preference_id, number, name) VALUES(:preference_id, :number, :name)";
-		if($form_state['values']['number']) {
+		if($form_state['values']['number'])
+		{
 			$args = array(
 				":preference_id" => $preference_id,
 				":number" => $form_state['values']['number'],
 				":name" => $form_state['values']['name']
 			);
 		}
-		else {
+		else
+		{
 			$args = array(
 				":preference_id" => $preference_id,
 				":number" => $form_state['values']['chapter_not_exist'],
@@ -569,7 +568,10 @@ function upload_examples_form_submit($form, &$form_state)
 		}
 	} //$cur_example_d = $cur_example_q->fetchObject()
 	/* creating directories */
-	$dest_path .= 'CH' . $form_state['values']['number'] . '/';
+	if($form_state['values']['number'])
+		$dest_path .= 'CH' . $form_state['values']['number'] . '/';
+	else
+		$dest_path .= 'CH' . $form_state['values']['chapter_not_exist'] . '/';
 	if (!is_dir($root_path . $dest_path))
 		mkdir($root_path . $dest_path);
 	$dest_path .= 'EX' . $form_state['values']['example_number'] . '/';
@@ -706,13 +708,89 @@ function upload_examples_form_submit($form, &$form_state)
 /******************************************************************************/
 /***************************** DELETE CHAPTER *********************************/
 /******************************************************************************/
-function _chapter_delete()
+function chapter_delete()
 {
 	global $user;
 	$chapter_id = arg(4);
-	delete_chapter($chapter_id);
-	drupal_set_message(t("Chapter deleted successfully."), 'status');
+
+	//delete_chapter($chapter_id);
+	//drupal_set_message(t("Chapter deleted successfully."), 'status');
+	//drupal_goto('textbook_companion/code');
+	//$root_path = textbook_companion_path();
+	/*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE id = %d LIMIT 1", $example_data->chapter_id);
+	$chapter_data = db_fetch_object($chapter_q);*/
+	$query = db_select('textbook_companion_chapter');
+	$query->fields('textbook_companion_chapter');
+	$query->condition('id', $chapter_id);
+	$query->range(0, 1);
+	$result = $query->execute();
+	$chapter_data = $result->fetchObject();
+	if (!$chapter_data)
+	{
+		drupal_set_message('You do not have permission to delete this example.', 'error');
+		drupal_goto('textbook_companion/code');
+		return;
+	} //!$chapter_data
+	/*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = %d LIMIT 1", $chapter_data->preference_id);
+	$preference_data = db_fetch_object($preference_q);*/
+	$query = db_select('textbook_companion_preference');
+	$query->fields('textbook_companion_preference');
+	$query->condition('id', $chapter_data->preference_id);
+	$query->range(0, 1);
+	$result = $query->execute();
+	$preference_data = $result->fetchObject();
+	if (!$preference_data)
+	{
+		drupal_set_message('You do not have permission to delete this example.', 'error');
+		drupal_goto('textbook_companion/code');
+		return;
+	} //!$preference_data
+	/*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE id = %d AND uid = %d LIMIT 1", $preference_data->proposal_id, $user->uid);
+	$proposal_data = db_fetch_object($proposal_q);*/
+	$query = db_select('textbook_companion_proposal');
+	$query->fields('textbook_companion_proposal');
+	$query->condition('id', $preference_data->proposal_id);
+	$query->condition('uid', $user->uid);
+	$query->range(0, 1);
+	$result = $query->execute();
+	$proposal_data = $result->fetchObject();
+	if (!$proposal_data)
+	{
+		drupal_set_message('You do not have permission to delete this example.', 'error');
+		drupal_goto('textbook_companion/code');
+		return;
+	} //!$proposal_data
+	/* deleting example files */
+	if (delete_chapter($chapter_data->id))
+	{
+		drupal_set_message('Chapter deleted.', 'status');-
+		/* sending email */
+		$email_to = $user->mail;
+		$from = variable_get('textbook_companion_from_email', '');
+		$bcc = variable_get('textbook_companion_emails', '');
+		$cc = variable_get('textbook_companion_cc_emails', '');
+		$params['chapter_deleted_user']['book_title'] = $preference_data->book;
+		$params['chapter_deleted_user']['chapter_title'] = $chapter_data->name;
+		$params['chapter_deleted_user']['chapter_number']. = $chapter_data->number;
+		$params['chapter_deleted_user']['user_id'] = $user->uid;
+		$params['chaptere_deleted_user']['headers'] = array(
+			'From' => $from,
+			'MIME-Version' => '1.0',
+			'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+			'Content-Transfer-Encoding' => '8Bit',
+			'X-Mailer' => 'Drupal',
+			'Cc' => $cc,
+			'Bcc' => $bcc
+		);
+		if (!drupal_mail('textbook_companion', 'chapter_deleted_user', $email_to, language_default(), $params, $from, TRUE))
+			drupal_set_message('Error sending email message.', 'error');
+	} //delete_example($example_data->id)
+	else
+	{
+		drupal_set_message('Error deleting chapter.', 'status');
+	}
 	drupal_goto('textbook_companion/code');
+	return;
 }
 /******************************************************************************/
 /***************************** DELETE EXAMPLE *********************************/
@@ -873,7 +951,9 @@ function _list_of_book_dependency_files($book_id)
 function display_chapter_name_callback($form, &$form_state) {
 	return $form['name'];
 }
-/*function returns wheather chapter no. exists or not*/
+/**
+ *function returns wheather chapter no. exists or not
+ */
 function check_chapter_exist($number, $preference_id) {
 	$query = db_select('textbook_companion_chapter');
 	$query->fields('textbook_companion_chapter');
@@ -886,7 +966,9 @@ function check_chapter_exist($number, $preference_id) {
 	}
 	return FALSE;
 }
-/*function returns wheather existing chapter name is changed or not*/
+/**
+ *function returns wheather existing chapter name is changed or not
+ */
 function check_chapter_name($number, $name, $preference_id) {
 	$query = db_select('textbook_companion_chapter');
 	$query->fields('textbook_companion_chapter');
