@@ -389,7 +389,7 @@ function cheque_contct_form() {
         return $form;
     }
 }
-function cheque_status_form($form_state, $proposal_id)
+  function cheque_status_form($form_state, $proposal_id)
 {
     global $user;
     /* get current proposal */
@@ -848,7 +848,7 @@ function cheque_status_form($form_state, $proposal_id)
     );
     return $form;
 }
-/*function cheque_status_form_validate($form, &$form_state) 
+/*function cheque_status_form_validate($form, &$form_state)
 {
 
 //var_dump(($form_state['values']['stu_cheque_details']['cheque_amt']));
@@ -878,23 +878,23 @@ function cheque_status_form_submit($form, &$form_state)
 {
     global $user;
     $proposal_id = arg(2);
-    /*$query ="UPDATE {textbook_companion_cheque} SET 
+    /*$query ="UPDATE {textbook_companion_cheque} SET
     cheque_no = ".$form_state['values']['cheque_no'].",
     cheque_amt = ".$form_state['values']['cheq_amt'].",
-    alt_mobno = '".$form_state['values']['mobileno2']."', 
-    address = '".$form_state['values']['chq_address']."',  
-    perm_city = '".$form_state['values']['perm_city']."', 
-    perm_state = '".$form_state['values']['perm_state']."', 
-    perm_pincode = '".$form_state['values']['perm_pincode']."', 
-    temp_chq_address = '".$form_state['values']['temp_chq_address']."', 
-    temp_city = '".$form_state['values']['temp_city']."', 
-    temp_state = '".$form_state['values']['temp_state']."', 
+    alt_mobno = '".$form_state['values']['mobileno2']."',
+    address = '".$form_state['values']['chq_address']."',
+    perm_city = '".$form_state['values']['perm_city']."',
+    perm_state = '".$form_state['values']['perm_state']."',
+    perm_pincode = '".$form_state['values']['perm_pincode']."',
+    temp_chq_address = '".$form_state['values']['temp_chq_address']."',
+    temp_city = '".$form_state['values']['temp_city']."',
+    temp_state = '".$form_state['values']['temp_state']."',
     temp_pincode = '".$form_state['values']['temp_pincode']."',
-    commentf = '".$form_state['values']['comment_cheque']."', 
+    commentf = '".$form_state['values']['comment_cheque']."',
     t_cheque_no = ".$form_state['values']['cheque_no_t'].",
     t_cheque_amt = ".$form_state['values']['cheq_amt_t']."
     WHERE proposal_id = ".$proposal_id;
-    
+
     db_query($query);*/
     $query = db_update('textbook_companion_cheque');
     $query->fields(array(
@@ -957,7 +957,7 @@ function cheque_status_form_submit($form, &$form_state)
         $num_updated = $query->execute();
     } //$form_state['values']['cheque_cleared'] == 1
     /************************************************
-    Check For the Remark 
+    Check For the Remark
     ************************************************/
     if ($form_state['values']['comment_cheque'])
     {
@@ -981,20 +981,20 @@ function MySQL_NOW()
 {
     return date('Y-m-d');
 }
-function contact_details($form_state)
+function contact_details_form($form, &$form_state)
 {
     global $user;
     if (!isset($_REQUEST['msg']))
         drupal_set_message(t('<strong>Caution</strong>:Please update Contact Detail carefully as this will be used for future reference during <strong>Payment</strong></li></ul>'), 'error');
-    $x = $user->uid;
+    //$x = $user->uid
     /*$query2 = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid=".$x);
     $data2 = db_fetch_object($query2);*/
     $query = db_select('textbook_companion_proposal');
     $query->fields('textbook_companion_proposal');
-    $query->condition('uid', $x);
+    $query->condition('uid', $user->uid);
     $result = $query->execute();
-    $data2 = $result->fetchObject();
-    if (!$data2)
+    $proposal_data = $result->fetchObject();
+    if (!$proposal_data)
     {
         drupal_set_message(t('Fill Up The <a href="proposal">Book Proposal Form</a>'), 'error');
         return '';
@@ -1004,30 +1004,25 @@ function contact_details($form_state)
     $query = db_select('textbook_companion_preference');
     $query->fields('textbook_companion_preference');
     $query->condition('approval_status', 1);
-    $query->condition('proposal_id', $data2->id);
+    $query->condition('proposal_id', $proposal_data->id);
     $result = $query->execute();
-    $data3 = $result->fetchObject();
-    if (!$data3->approval_status)
+    $preference_data = $result->fetchObject();
+    if (!$preference_data->approval_status)
     {
         drupal_set_message(t('Book Proposal Has Not Been Accpeted.'), 'error');
         return '';
     } //!$data3->approval_status
-    $proposal_id = $data2->id;
+    $proposal_id = $proposal_data->id;
     /*$comment_qx = db_query("SELECT * FROM textbook_companion_cheque c WHERE proposal_id =".$proposal_id);
     $commentv = db_fetch_object($comment_qx);*/
-    $query = db_select('textbook_companion_cheque', 'c');
-    $query->fields('c');
-    $query->condition('proposal_id', $proposal_id);
-    $result = $query->execute();
-    $commentv = $result->fetchObject();
-    $form16 = $commentv->commentf;
-    $mob_no = $data2->mobile;
-    $full_name = $data2->full_name;
-    /*$query1 = db_query("SELECT * FROM {textbook_companion_cheque} WHERE proposal_id=".$proposal_id);*/
     $query = db_select('textbook_companion_cheque');
     $query->fields('textbook_companion_cheque');
     $query->condition('proposal_id', $proposal_id);
     $result = $query->execute();
+    $data = $result->fetchObject();
+    $mob_no = $proposal_data->mobile;
+    $full_name = $proposal_data->full_name;
+    /*$query1 = db_query("SELECT * FROM {textbook_companion_cheque} WHERE proposal_id=".$proposal_id);*/
     $form1 = 0;
     $form2 = 0;
     $form3 = 0;
@@ -1043,28 +1038,29 @@ function contact_details($form_state)
     $form13 = 0;
     $form14 = 0;
     $form15 = 0;
-    if ($data = $result->fetchObject())
-    {
-        $form1 = $data->address;
-        $form8 = $data->alt_mobno;
-        $form9 = $data->perm_city;
-        $form10 = $data->perm_state;
-        $form11 = $data->perm_pincode;
-        $form12 = $data->temp_chq_address;
-        $form13 = $data->temp_city;
-        $form14 = $data->temp_state;
-        $form15 = $data->temp_pincode;
+    $form16 = $data->commentf;
+    if ($data) {
+      $form1 = $data->address;
+      $form8 = $data->alt_mobno;
+      $form9 = $data->perm_city;
+      $form10 = $data->perm_state;
+      $form11 = $data->perm_pincode;
+      $form12 = $data->temp_chq_address;
+      $form13 = $data->temp_city;
+      $form14 = $data->temp_state;
+      $form15 = $data->temp_pincode;
     } //$data = $result->fetchObject()
-    else
-    {
-        /*db_query("insert into {textbook_companion_cheque} (proposal_id) values(%d)",$proposal_id);*/
-        $query = "insert into {textbook_companion_cheque} (proposal_id) values (:proposal_id)";
-        $args = array(
-            ":proposal_id" => $proposal_id
-        );
-        $result = db_query($query, $args, array(
-            'return' => Database::RETURN_INSERT_ID
-        ));
+    else {
+      /*db_query("insert into {textbook_companion_cheque} (proposal_id) values(%d)",$proposal_id);*/
+      //$query = "INSERT INTO {textbook_companion_cheque} (proposal_id) VALUES (:proposal_id)";
+      $query = "INSERT INTO {textbook_companion_cheque} (proposal_id) VALUES(:proposal_id)";
+      $args = array(
+          ":proposal_id" => $proposal_id,
+      );
+      //var_dump($query);die;
+      $result = db_query($query, $args, array(
+        'return' => Database::RETURN_INSERT_ID
+      ));
     }
     $form['candidate_detail'] = array(
         '#type' => 'fieldset',
@@ -1260,15 +1256,15 @@ function contact_details_submit($form, &$form_state)
     $query->condition('uid', $x);
     $result = $query->execute();
     $data2 = $result->fetchObject();
-    /*$query ="UPDATE {textbook_companion_cheque} SET 
-    alt_mobno = '".$form_state['values']['mobileno2']."' , 
-    address = '".$form_state['values']['chq_address']."',  
-    perm_city = '".$form_state['values']['perm_city']."', 
-    perm_state = '".$form_state['values']['perm_state']."', 
-    perm_pincode = '".$form_state['values']['perm_pincode']."', 
-    temp_chq_address = '".$form_state['values']['temp_chq_address']."', 
-    temp_city = '".$form_state['values']['temp_city']."', 
-    temp_state = '".$form_state['values']['temp_state']."', 
+    /*$query ="UPDATE {textbook_companion_cheque} SET
+    alt_mobno = '".$form_state['values']['mobileno2']."' ,
+    address = '".$form_state['values']['chq_address']."',
+    perm_city = '".$form_state['values']['perm_city']."',
+    perm_state = '".$form_state['values']['perm_state']."',
+    perm_pincode = '".$form_state['values']['perm_pincode']."',
+    temp_chq_address = '".$form_state['values']['temp_chq_address']."',
+    temp_city = '".$form_state['values']['temp_city']."',
+    temp_state = '".$form_state['values']['temp_state']."',
     temp_pincode = '".$form_state['values']['temp_pincode']."' ,
     address_con = 'Submitted'
     WHERE proposal_id = ".$data2->id;
@@ -1373,4 +1369,3 @@ function cheque_report_form()
         die;
     } //$fp && $result
 }
-

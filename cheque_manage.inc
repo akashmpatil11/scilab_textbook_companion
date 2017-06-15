@@ -86,6 +86,6 @@ function cheque_proposal_all() {
         'header' => $proposal_header,
         'rows' => $proposal_rows
     ));
-    return $output . theme_pager($count);
+    return $output;
 }
 return $form;
