@@ -8,8 +8,7 @@ textbook companion  table column "book_status" field values means
 3 = 'Completed'
 4 = ‘Disabled’
 */
-function _book_pending()
-{
+function _book_pending() {
   /* get pending proposals to be approved */
   $pending_rows = array();
   /*$pending_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 ORDER BY id DESC");*/
@@ -18,8 +17,7 @@ function _book_pending()
   $query->condition('book_status', 0);
   $query->orderBy('id', 'DESC');
   $pending_q = $query->execute();
-  while ($pending_data = $pending_q->fetchObject())
-  {
+  while ($pending_data = $pending_q->fetchObject()) {
     $query = db_select('textbook_companion_proposal');
     $query->fields('textbook_companion_proposal');
     $query->condition('id', $pending_data->proposal_id);
@@ -30,12 +28,12 @@ function _book_pending()
       l($pending_data_p->full_name, 'user/' . $pending_data_p->uid),
       l($pending_data->edition, 'user/' . $pending_data_p->uid),
       l($pending_data->year, 'user/' . $pending_data_p->uid),
-      l('Approve', 'manage_books/approve/' . $pending_data->id) . ' | ' . l('Edit', 'manage_books/edit/' . $pending_data->id)
+      l('Edit', 'manage_books/edit/' . $pending_data->id)
+      //l('Approve', 'manage_books/approve/' . $pending_data->id) . ' | ' . l('Edit', 'manage_books/edit/' . $pending_data->id)
     );
   } //$pending_data = $pending_q->fetchObject()
   /* check if there are any pending proposals */
-  if (!$pending_rows)
-  {
+  if (!$pending_rows) {
     drupal_set_message(t('There are no pending Books.'), 'status');
     return '';
   } //!$pending_rows
@@ -52,16 +50,12 @@ function _book_pending()
   ));
   return $output;
 }
-function _book_all()
-{
-  function _tbc_ext($status, $preference_id)
-  {
-    if ($status == "Approved")
-    {
+function _book_all() {
+  function _tbc_ext($status, $preference_id) {
+    if ($status == "Approved") {
       return " | " . l("ER", "tbc_external_review/add_book/" . $preference_id);
     } //$status == "Approved"
-    else
-    {
+    else {
       return "";
     }
   }
@@ -72,14 +66,12 @@ function _book_all()
   $query->fields('textbook_companion_preference');
   $query->orderBy('id', 'DESC');
   $book_q = $query->execute();
-  while ($book_data = $book_q->fetchObject())
-  {
+  while ($book_data = $book_q->fetchObject()) {
     /* get preference */
     /*$preference_q = db_query("SELECT * FROM textbook_companion_preference WHERE proposal_id = %d AND approval_status = 1 LIMIT 1", $proposal_data->id);
     $preference_data = db_fetch_object($preference_q);*/
     $book_status = '';
-    switch ($book_data->book_status)
-    {
+    switch ($book_data->book_status) {
       case 0:
         $book_status = 'In Progress';
         break;
@@ -109,8 +101,7 @@ function _book_all()
     );
   } //$proposal_data = $proposal_q->fetchObject()
   /* check if there are any pending proposals */
-  if (!$book_rows)
-  {
+  if (!$book_rows) {
     drupal_set_message(t('There are no Books available.'), 'status');
     return '';
   } //!$proposal_rows
@@ -128,8 +119,7 @@ function _book_all()
   ));
   return $output;
 }
-function _category_all()
-{
+function _category_all() {
   /* get pending proposals to be approved */
   $preference_rows = array();
   /*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE approval_status = 1 ORDER BY id DESC");*/
@@ -138,10 +128,8 @@ function _category_all()
   $query->condition('approval_status', 1);
   $query->orderBy('id', 'DESC');
   $preference_q = $query->execute();
-  while ($preference_data = $preference_q->fetchObject())
-  {
-    switch ($preference_data->category)
-    {
+  while ($preference_data = $preference_q->fetchObject()) {
+    switch ($preference_data->category) {
       case 0:
         $category_data = 'Not Selected';
         break;
@@ -216,8 +204,7 @@ function _category_all()
 /******************************************************************************/
 /************************** BOOK APPROVAL FORM ********************************/
 /******************************************************************************/
-function book_approval_form($form, &$form_state)
-{
+function book_approval_form($form, &$form_state) {
   global $user;
   /* get current book */
   $book_id = arg(2);
@@ -227,21 +214,17 @@ function book_approval_form($form, &$form_state)
   $query->condition('book_status', 0);
   $query->condition('id', $book_id);
   $result = $query->execute();
-  if ($result)
-  {
-    if ($book_data = $result->fetchObject())
-    {
+  if ($result) {
+    if ($book_data = $result->fetchObject()) {
       /* everything ok */
     } //$row = $result->fetchObject()
-    else
-    {
+    else {
       drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
       drupal_goto('manage_books');
       return;
     }
   } //$result
-  else
-  {
+  else {
     drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
     drupal_goto('manage_books');
     return;
@@ -252,8 +235,7 @@ function book_approval_form($form, &$form_state)
   $row = $query->execute();
   $row = $row->fetchObject();
   $book_status = '';
-  switch ($book_data->book_status)
-  {
+  switch ($book_data->book_status) {
     case 0:
       $book_status = 'In Progress';
       break;
@@ -374,7 +356,7 @@ function book_approval_form($form, &$form_state)
   );
   $form['preference'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Book Details'),
+    '#title' => t('Book Details')
   );
   $form['preference']['book'] = array(
     '#type' => 'item',
@@ -411,7 +393,7 @@ function book_approval_form($form, &$form_state)
     '1' => 'Under Review',
     '2' => 'Approved',
     '3' => 'Completed',
-    '4' => 'Disabled',
+    '4' => 'Disabled'
   );
   $form['book_status_'] = array(
     '#type' => 'select',
@@ -438,12 +420,11 @@ function book_approval_form($form, &$form_state)
   );
   return $form;
 }
-function book_approval_form_submit($form, &$form_state)
-{
+function book_approval_form_submit($form, &$form_state) {
   $preference_id = $form_state['values']['book_id'];
   $query = db_update('textbook_companion_preference');
   $query->fields(array(
-    'book_status' => $form_state['values']['book_status_'],
+    'book_status' => $form_state['values']['book_status_']
   ));
   $query->condition('id', $preference_id);
   $updated = $query->execute();
@@ -480,8 +461,7 @@ function book_approval_form_submit($form, &$form_state)
 /******************************************************************************/
 /*************************** BOOK STATUS FORM *****************************/
 /******************************************************************************/
-function book_status_form($form, &$form_state)
-{
+function book_status_form($form, &$form_state) {
   global $user;
   /* get current book */
   $book_id = arg(2);
@@ -490,21 +470,17 @@ function book_status_form($form, &$form_state)
   $query->fields('textbook_companion_preference');
   $query->condition('id', $book_id);
   $result = $query->execute();
-  if ($result)
-  {
-    if ($book_data = $result->fetchObject())
-    {
+  if ($result) {
+    if ($book_data = $result->fetchObject()) {
       /* everything ok */
     } //$row = $result->fetchObject()
-    else
-    {
+    else {
       drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
       drupal_goto('manage_books');
       return;
     }
   } //$result
-  else
-  {
+  else {
     drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
     drupal_goto('manage_books');
     return;
@@ -515,8 +491,7 @@ function book_status_form($form, &$form_state)
   $row = $query->execute();
   $row = $row->fetchObject();
   $book_status = '';
-  switch ($book_data->book_status)
-  {
+  switch ($book_data->book_status) {
     case 0:
       $book_status = 'In Progress';
       break;
@@ -637,7 +612,7 @@ function book_status_form($form, &$form_state)
   );
   $form['preference'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Book Details'),
+    '#title' => t('Book Details')
   );
   $form['preference']['book'] = array(
     '#type' => 'item',
@@ -669,10 +644,19 @@ function book_status_form($form, &$form_state)
     '#title' => t('Year of pulication'),
     '#markup' => $book_data->year
   );
+  $status = array(
+    '0' => 'In progress',
+    '1' => 'Under Review',
+    '2' => 'Approved',
+    '3' => 'Completed',
+    '4' => 'Disabled'
+  );
   $form['preference']['book_status_'] = array(
-    '#type' => 'item',
+    '#type' => 'select',
     '#title' => t('Status'),
-    '#markup' => $book_status
+    '#options' => $status,
+    '#required' => TRUE,
+    '#default_value' => $book_data->book_status
   );
   $form['proposal_id'] = array(
     '#type' => 'hidden',
@@ -692,8 +676,7 @@ function book_status_form($form, &$form_state)
 /******************************************************************************/
 /**************************** BOOK EDIT FORM ******************************/
 /******************************************************************************/
-function book_edit_form($form, &$form_state, $nonaicte_book)
-{
+function book_edit_form($form, &$form_state, $nonaicte_book) {
   global $user;
   /* get current proposal */
   $book_id = arg(2);
@@ -701,19 +684,16 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
   $query->fields('textbook_companion_preference');
   $query->condition('id', $book_id);
   $book_q = $query->execute();
-  if ($book_q)
-  {
+  if ($book_q) {
     $book_data = $book_q->fetchObject();
     //Var_dump($proposal_data);die;
-    if (!$book_data)
-    {
+    if (!$book_data) {
       drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
       drupal_goto('manage_books');
       return;
     } //!$proposal_data
   } //$proposal_q
-  else
-  {
+  else {
     drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
     drupal_goto('manage_books');
     return;
@@ -741,26 +721,26 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
   );
   /*
   $form['completion_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Expected Date of Completion'),
-    '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
-    '#size' => 10,
-    '#maxlength' => 10,
-    '#default_value' => date('d-m-Y', $proposal_data->completion_date)
+  '#type' => 'textfield',
+  '#title' => t('Expected Date of Completion'),
+  '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
+  '#size' => 10,
+  '#maxlength' => 10,
+  '#default_value' => date('d-m-Y', $proposal_data->completion_date)
   );
 
   $form['proposed_completion_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Proposed Date of Completion'),
-    '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
-    '#size' => 10,
-    '#maxlength' => 10,
-    '#default_value' => date('d-m-Y', $proposal_data->proposed_completion_date)
+  '#type' => 'textfield',
+  '#title' => t('Proposed Date of Completion'),
+  '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
+  '#size' => 10,
+  '#maxlength' => 10,
+  '#default_value' => date('d-m-Y', $proposal_data->proposed_completion_date)
   );
   */
   /**
-  *Added date_popup for date selection
-  */
+   *Added date_popup for date selection
+   */
   $form['completion_date'] = array(
     '#type' => 'date_popup',
     '#title' => t('Expected Date of Completion'),
@@ -782,8 +762,8 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
     '#default_value' => date('Y-m-d', $proposal_data->proposed_completion_date),
     '#date_format' => 'd-m-Y',
     '#attributes' => array(
-        'autocomplete' => 'off',
-       'readonly' => 'readonly'
+      'autocomplete' => 'off',
+      'readonly' => 'readonly'
     ),
     "#required" => TRUE
   );
@@ -867,17 +847,16 @@ function book_edit_form($form, &$form_state, $nonaicte_book)
   );
   return $form;
 }
-function book_edit_form_validate($form, &$form_state)
-{
+function book_edit_form_validate($form, &$form_state) {
   /* date of completion */
   // if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
   //   form_set_error('completion_date', t('Invalid expected date of completion'));
-   list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
-   $d = (int) $d;
-   $m = (int) $m;
-   $y = (int) $y;
-   if (!checkdate($m, $d, $y))
-     form_set_error('completion_date', t('Invalid expected date of completion'));
+  list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
+  $d = (int) $d;
+  $m = (int) $m;
+  $y = (int) $y;
+  if (!checkdate($m, $d, $y))
+    form_set_error('completion_date', t('Invalid expected date of completion'));
   if (mktime(0, 0, 0, $m, $d, $y) <= time())
     form_set_error('completion_date', t('Expected date of completion should be in future'));
   /* edition */
@@ -896,8 +875,7 @@ function book_edit_form_validate($form, &$form_state)
   return;
 }
 /***************** book edit from submit ********************/
-function book_edit_form_submit($form, &$form_state)
-{
+function book_edit_form_submit($form, &$form_state) {
   /* completion date to timestamp */
   list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
   $completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
@@ -909,7 +887,7 @@ function book_edit_form_submit($form, &$form_state)
     'full_name' => $form_state['values']['full_name'],
     'reviewer' => $form_state['values']['reviewer'],
     'completion_date' => $completion_date_timestamp,
-    'proposed_completion_date' => $proposed_completion_date_timestamp,
+    'proposed_completion_date' => $proposed_completion_date_timestamp
   ));
   $query->condition('id', $proposal_id);
   $num_updated = $query->execute();
@@ -921,8 +899,7 @@ function book_edit_form_submit($form, &$form_state)
   $preference_q = $query->execute();
   $preference_data = $preference_q->fetchObject();
   $preference_id = $preference_data->id;
-  if ($preference_data)
-  {
+  if ($preference_data) {
     del_book_pdf($preference_data->id);
     $query = db_update('textbook_companion_preference');
     $query->fields(array(
@@ -938,8 +915,8 @@ function book_edit_form_submit($form, &$form_state)
     $num_updated = $query->execute();
   } //$preference1_data
   /**
-  *Sending mail to user about editing book details
-  */
+   *Sending mail to user about editing book details
+   */
   $book_user = user_load($row->uid);
   $email_to = $book_user->mail;
   $from = variable_get('textbook_companion_from_email', '');
@@ -965,8 +942,7 @@ function book_edit_form_submit($form, &$form_state)
 /******************************************************************************/
 /**************************** CATEGORY EDIT FORM ******************************/
 /******************************************************************************/
-function category_edit_form($form, &$form_state)
-{
+function category_edit_form($form, &$form_state) {
   /* get current proposal */
   $preference_id = arg(3);
   $query = db_select('textbook_companion_preference');
@@ -974,8 +950,7 @@ function category_edit_form($form, &$form_state)
   $query->condition('id', $preference_id);
   $preference_q = $query->execute();
   $preference_data = $preference_q->fetchObject();
-  if (!$preference_data)
-  {
+  if (!$preference_data) {
     drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
     drupal_goto('manage_proposal/category');
     return;
@@ -1027,8 +1002,7 @@ function category_edit_form($form, &$form_state)
   );
   return $form;
 }
-function category_edit_form_submit($form, &$form_state)
-{
+function category_edit_form_submit($form, &$form_state) {
   /* get current proposal */
   $preference_id = (int) arg(3);
   /*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE id = %d", $preference_id);
@@ -1038,8 +1012,7 @@ function category_edit_form_submit($form, &$form_state)
   $query->condition('id', $preference_id);
   $preference_q = $query->execute();
   $preference_data = $preference_q->fetchObject();
-  if (!$preference_data)
-  {
+  if (!$preference_data) {
     drupal_set_message(t('Invalid book selected. Please try again.'), 'error');
     drupal_goto('manage_proposal/category');
     return;
@@ -1057,8 +1030,7 @@ function category_edit_form_submit($form, &$form_state)
 /****************************************************************/
 /*                     Data entry forms                         */
 /****************************************************************/
-function _data_entry_proposal_all()
-{
+function _data_entry_proposal_all() {
   /* get pending proposals to be approved */
   $proposal_rows = array();
   /*$preference_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE approval_status = 1 ORDER BY book ASC");*/
@@ -1068,8 +1040,7 @@ function _data_entry_proposal_all()
   $query->orderBy('book', 'ASC');
   $preference_q = $query->execute();
   $sno = 1;
-  while ($preference_data = $preference_q->fetchObject())
-  {
+  while ($preference_data = $preference_q->fetchObject()) {
     $proposal_rows[] = array(
       $sno++,
       $preference_data->book,
@@ -1079,8 +1050,7 @@ function _data_entry_proposal_all()
     );
   } //$preference_data = $preference_q->fetchObject()
   /* check if there are any pending proposals */
-  if (!$proposal_rows)
-  {
+  if (!$proposal_rows) {
     drupal_set_message(t('There are no proposals.'), 'status');
     return '';
   } //!$proposal_rows
@@ -1097,19 +1067,15 @@ function _data_entry_proposal_all()
   ));
   return $output;
 }
-function dataentry_edit($id = NULL)
-{
-  if ($id)
-  {
+function dataentry_edit($id = NULL) {
+  if ($id) {
     return drupal_get_form('dataentry_edit_form', $id);
   } //$id
-  else
-  {
+  else {
     return 'Access denied';
   }
 }
-function dataentry_edit_form($form, &$form_state, $id)
-{
+function dataentry_edit_form($form, &$form_state, $id) {
   global $user;
   $query = db_select('textbook_companion_preference');
   $query->fields('textbook_companion_preference');
@@ -1178,8 +1144,7 @@ function dataentry_edit_form($form, &$form_state, $id)
   );
   return $form;
 }
-function dataentry_edit_form_submit($form, &$form_state)
-{
+function dataentry_edit_form_submit($form, &$form_state) {
   $query = db_update('textbook_companion_preference');
   $query->fields(array(
     'book' => $_POST['book'],
@@ -1194,11 +1159,9 @@ function dataentry_edit_form_submit($form, &$form_state)
   drupal_set_message('Book details updated successfully');
   drupal_goto('dataentry_book');
 }
-function _failed_all($preference_id = 0, $confirm = "")
-{
+function _failed_all($preference_id = 0, $confirm = "") {
   $page_content = "";
-  if ($preference_id && $confirm == "yes")
-  {
+  if ($preference_id && $confirm == "yes") {
     $query = "
       SELECT *, pro.id as proposal_id FROM textbook_companion_proposal pro
       LEFT JOIN textbook_companion_preference pre ON pre.proposal_id = pro.id
@@ -1241,8 +1204,7 @@ function _failed_all($preference_id = 0, $confirm = "")
     drupal_set_message("Reminder sent successfully.");
     drupal_goto("manage_proposal/failed");
   } //$preference_id && $confirm == "yes"
-  else if ($preference_id)
-  {
+  else if ($preference_id) {
     $query = "
       SELECT * FROM textbook_companion_preference pre
       LEFT JOIN textbook_companion_proposal pro ON pro.id = pre.proposal_id
@@ -1261,8 +1223,7 @@ function _failed_all($preference_id = 0, $confirm = "")
     $page_content .= l("Yes", "manage_proposal/failed/{$preference_id}/yes") . " | ";
     $page_content .= l("Cancel", "manage_proposal/failed");
   } //$preference_id
-  else
-  {
+  else {
     $query = "
       SELECT * FROM textbook_companion_proposal pro
       LEFT JOIN textbook_companion_preference pre ON pre.proposal_id = pro.id
@@ -1282,8 +1243,7 @@ function _failed_all($preference_id = 0, $confirm = "")
       "Action"
     );
     $rows = array();
-    while ($row = $result->fetchObject())
-    {
+    while ($row = $result->fetchObject()) {
       $item = array(
         date("d-m-Y", $row->creation_date),
         "{$row->book}<br><i>by</i> {$row->author}",

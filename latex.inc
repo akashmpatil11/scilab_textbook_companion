@@ -217,7 +217,7 @@ function _latex_run_script($book_filename, $contributor_filename, $latex_filenam
   chdir("latex");
   $sh_command = "./pdf_creator.sh " . $book_filename . " " . $contributor_filename . " " . $latex_filename . " " . $latex_dep_filename . " " . $pdf_filename;
 
-  exec($sh_command);
+  if(shell_exec($sh_command))
   {
     return TRUE;
   } //$ret == 0

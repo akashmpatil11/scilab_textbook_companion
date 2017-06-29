@@ -1,7 +1,6 @@
 <?php
 /* Aicte books pickup before the proposal form */
-function textbook_companion_aicte_proposal_form($form, &$form_state)
-{
+function textbook_companion_aicte_proposal_form($form, &$form_state) {
   /*********** fetch aicte book data ********************/
   $query = db_select('textbook_companion_aicte');
   $query->fields('textbook_companion_aicte');
@@ -15,32 +14,25 @@ function textbook_companion_aicte_proposal_form($form, &$form_state)
     "#suffix" => "</div>"
   );
   $num_rows = $result->rowCount();
-  if ($num_rows > 0)
-  {
-    while ($row = $result->fetchObject())
-    {
+  if ($num_rows > 0) {
+    while ($row = $result->fetchObject()) {
       /* fixing title string */
       $title = "";
       $edition = "";
       $year = "";
       $title = "{$row->book} by {$row->author}";
-      if ($row->edition)
-      {
+      if ($row->edition) {
         $edition = "<i>ed</i>: {$row->edition}";
       } //$row->edition
-      if ($row->year)
-      {
-        if ($row->edition)
-        {
+      if ($row->year) {
+        if ($row->edition) {
           $year = ", <i>pub</i>: {$row->year}";
         } //$row->edition
-        else
-        {
+        else {
           $year = "<i>pub</i>: {$row->year}";
         }
       } //$row->year
-      if ($edition or $year)
-      {
+      if ($edition or $year) {
         $title .= "({$edition} {$year})";
       } //$edition or $year
       $form["wrapper"][$row->id] = array(
@@ -57,8 +49,7 @@ function textbook_companion_aicte_proposal_form($form, &$form_state)
   );
   return $form;
 }
-function textbook_companion_aicte_proposal_form_validate($form, &$form_state)
-{
+function textbook_companion_aicte_proposal_form_validate($form, &$form_state) {
   $query = db_select('textbook_companion_aicte');
   $query->fields('textbook_companion_aicte');
   $query->condition('status', 0);
@@ -66,33 +57,27 @@ function textbook_companion_aicte_proposal_form_validate($form, &$form_state)
   $result = $query->execute();
   $count = 0;
   $selections = array();
-  while ($row = $result->fetchObject())
-  {
-    if ($form_state["values"][$row->id] == 1)
-    {
+  while ($row = $result->fetchObject()) {
+    if ($form_state["values"][$row->id] == 1) {
       $count++;
       array_push($selections, $row->id);
     } //$form_state["values"][$row->id] == 1
   } //$row = $result->fetchObject()
   /* user can choose only 3 books to propose */
-  if ($count != variable_get('textbook_companion_book_preferences', ''))
-  {
+  if ($count != variable_get('textbook_companion_book_preferences', '')) {
     form_set_error("", "Please select only <strong>1</strong> book. You currently selected <strong>{$count}</strong>");
   } //$count > 3
-  elseif ($count == 0)
-  {
+  elseif ($count == 0) {
 
     form_set_error("", "Please select only <strong>1</strong> book. You currently selected <strong>{$count}</strong>");
 
   } //$count == 0
-  else
-  {
+  else {
     $form_state["values"]["selections"] = $selections;
   }
 }
 /* AICTE Book list proposal form submit */
-function textbook_companion_aicte_proposal_form_submit($form, &$form_state)
-{
+function textbook_companion_aicte_proposal_form_submit($form, &$form_state) {
   global $user;
   $selections = $form_state["values"]["selections"];
   //var_dump($selections);
@@ -100,8 +85,7 @@ function textbook_companion_aicte_proposal_form_submit($form, &$form_state)
   drupal_goto("proposal");
 }
 /************* AICTE book report form **************/
-function textbook_companion_aicte_report_form($from, &$form_state)
-{
+function textbook_companion_aicte_report_form($from, &$form_state) {
   $query = db_select('textbook_companion_aicte');
   $query->fields('textbook_companion_aicte');
   $query->condition('status', 0);
@@ -109,8 +93,7 @@ function textbook_companion_aicte_report_form($from, &$form_state)
   $result = $query->execute();
   $books = array();
   $books[0] = "Please select a book";
-  while ($row = $result->fetchObject())
-  {
+  while ($row = $result->fetchObject()) {
     $books[$row->id] = "{$row->book} ({$row->author})";
   } //$row = $result->fetchObject()
   $form = array();
@@ -147,8 +130,7 @@ function textbook_companion_aicte_report_form($from, &$form_state)
   return $form;
 }
 /************* AICTE book report form submit **************/
-function textbook_companion_aicte_report_form_submit($form, &$form_state)
-{
+function textbook_companion_aicte_report_form_submit($form, &$form_state) {
   $v = $form_state["values"];
   $query = "INSERT INTO {textbook_companion_aicte_report}
         (aicte_id, name, number, email, comment)
@@ -166,12 +148,10 @@ function textbook_companion_aicte_report_form_submit($form, &$form_state)
   drupal_set_message("Thank you for reporting.", "status");
 }
 /************* AICTE book list selection **************/
-function textbook_companion_aicte_proposal_all()
-{
+function textbook_companion_aicte_proposal_all() {
   global $user;
   $page_content = "";
-  if (!$user->uid)
-  {
+  if (!$user->uid) {
     $query = db_select('textbook_companion_aicte');
     $query->fields('textbook_companion_aicte');
     $query->condition('status', 0);
@@ -186,33 +166,26 @@ function textbook_companion_aicte_proposal_all()
     $page_content .= "<input type='button' value ='clear' id='search_clear'/>";
     $page_content .= "<div id='aicte-list-wrapper'>";
     $num_rows = $result->rowCount();
-    if ($num_rows > 0)
-    {
+    if ($num_rows > 0) {
       $i = 1;
-      while ($row = $result->fetchObject())
-      {
+      while ($row = $result->fetchObject()) {
         /* fixing title string */
         $title = "";
         $edition = "";
         $year = "";
         $title = "{$row->book} by {$row->author}";
-        if ($row->edition)
-        {
+        if ($row->edition) {
           $edition = "<i>ed</i>: {$row->edition}";
         } //$row->edition
-        if ($row->year)
-        {
-          if ($row->edition)
-          {
+        if ($row->year) {
+          if ($row->edition) {
             $year = ", <i>pub</i>: {$row->year}";
           } //$row->edition
-          else
-          {
+          else {
             $year = "<i>pub</i>: {$row->year}";
           }
         } //$row->year
-        if ($edition or $year)
-        {
+        if ($edition or $year) {
           $title .= "({$edition} {$year})";
         } //$edition or $year
         $page_content .= "<div class='title'>{$i}) {$title}</div>";
@@ -231,12 +204,9 @@ function textbook_companion_aicte_proposal_all()
   $query->orderBy('id', 'DESC');
   $query->range(0, 1);
   $proposal_q = $query->execute();
-  if ($proposal_q)
-  {
-    if ($proposal_data = $proposal_q->fetchObject())
-    {
-      switch ($proposal_data->proposal_status)
-      {
+  if ($proposal_q) {
+    if ($proposal_data = $proposal_q->fetchObject()) {
+      switch ($proposal_data->proposal_status) {
         case 0:
           drupal_set_message(t('We have already received your proposal. We will get back to you soon.'), 'status');
           drupal_goto('');
@@ -272,12 +242,10 @@ function textbook_companion_aicte_proposal_all()
   return $page_content;
 }
 /*************** non aicte book proposal *******************/
-function textbook_companion_nonaicte_proposal_all()
-{
+function textbook_companion_nonaicte_proposal_all() {
   global $user;
   $page_content = "";
-  if (!$user->uid)
-  {
+  if (!$user->uid) {
     $page_content .= "<ul>";
     $page_content .= "<li>Please <a href='/user'><b><u>Login</u></b></a> to create a proposal.</li>";
     $page_content .= "</ul>";
@@ -291,12 +259,9 @@ function textbook_companion_nonaicte_proposal_all()
   $query->orderBy('id', 'DESC');
   $query->range(0, 1);
   $proposal_q = $query->execute();
-  if ($proposal_q)
-  {
-    if ($proposal_data = $proposal_q->fetchObject())
-    {
-      switch ($proposal_data->proposal_status)
-      {
+  if ($proposal_q) {
+    if ($proposal_data = $proposal_q->fetchObject()) {
+      switch ($proposal_data->proposal_status) {
         case 0:
           drupal_set_message(t('We have already received your proposal. We will get back to you soon.'), 'status');
           drupal_goto('');
@@ -327,8 +292,7 @@ function textbook_companion_nonaicte_proposal_all()
   return $page_content;
 }
 /* Textbook Companion Proposal */
-function textbook_companion_proposal_all()
-{
+function textbook_companion_proposal_all() {
   global $user;
   $page_content = "";
   // if (!$user->uid) {
@@ -342,12 +306,9 @@ function textbook_companion_proposal_all()
   $query->orderBy('id', 'DESC');
   $query->range(0, 1);
   $proposal_q = $query->execute();
-  if ($proposal_q)
-  {
-    if ($proposal_data = $proposal_q->fetchObject())
-    {
-      switch ($proposal_data->proposal_status)
-      {
+  if ($proposal_q) {
+    if ($proposal_data = $proposal_q->fetchObject()) {
+      switch ($proposal_data->proposal_status) {
         case 0:
           drupal_set_message(t('We have already received your proposal. We will get back to you soon.'), 'status');
           drupal_goto('');
@@ -373,8 +334,7 @@ function textbook_companion_proposal_all()
     } //$proposal_data = $proposal_q->fetchObject()
   } //$proposal_q
   $selections = variable_get("aicte_" . $user->uid, "");
-  if ($selections)
-  {
+  if ($selections) {
     $query = db_select('textbook_companion_aicte');
     $query->fields('textbook_companion_aicte');
     $query->condition('id', $selections[0]);
@@ -393,8 +353,7 @@ function textbook_companion_proposal_all()
     $book_proposal_form = drupal_get_form("book_proposal_form", $row1, $row2, $row3);
     $page_content .= drupal_render($book_proposal_form);
   } //$selections
-  else
-  {
+  else {
     // $book_proposal_form = drupal_get_form("book_proposal_form");
     //  $page_content .= drupal_render($book_proposal_form);
     drupal_goto("aicte_proposal");
@@ -402,8 +361,7 @@ function textbook_companion_proposal_all()
   return $page_content;
 }
 /* AICTE book proposal form */
-function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $row3 = NULL)
-{
+function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $row3 = NULL) {
   global $user;
   $form = array();
   $form['imp_notice'] = array(
@@ -587,11 +545,11 @@ function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $ro
   );
   /*
   $form['completion_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Expected Date of Completion'),
-    '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
-    '#size' => 10,
-    '#maxlength' => 10
+  '#type' => 'textfield',
+  '#title' => t('Expected Date of Completion'),
+  '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
+  '#size' => 10,
+  '#maxlength' => 10
   );
   */
   $form['completion_date'] = array(
@@ -686,8 +644,7 @@ function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $ro
     '#options' => _tbc_list_of_category(),
     '#required' => TRUE
   );
-  if ($row2 != NULL)
-  {
+  if ($row2 != NULL) {
     $form['preference2'] = array(
       '#type' => 'fieldset',
       '#title' => t('Book Preference 2'),
@@ -752,8 +709,7 @@ function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $ro
       '#required' => TRUE
     );
   } //$row2 != NULL
-  if ($row3 != NULL)
-  {
+  if ($row3 != NULL) {
     $form['preference3'] = array(
       '#type' => 'fieldset',
       '#title' => t('Book Preference 3'),
@@ -845,15 +801,14 @@ function book_proposal_form($form, &$form_state, $row1 = NULL, $row2 = NULL, $ro
   return $form;
 }
 /******************** AICTE book proposal from validate *****************************/
-function book_proposal_form_validate($form, &$form_state)
-{
+function book_proposal_form_validate($form, &$form_state) {
   /* mobile */
   if (!preg_match('/^[0-9\ \+]{0,15}$/', $form_state['values']['mobile']))
     form_set_error('mobile', t('Invalid mobile number'));
   /* date of completion */
   /*
   if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
-    form_set_error('completion_date', t('Invalid expected date of completion'));
+  form_set_error('completion_date', t('Invalid expected date of completion'));
   */
   list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
   $d = (int) $d;
@@ -865,39 +820,31 @@ function book_proposal_form_validate($form, &$form_state)
     form_set_error('completion_date', t('Expected date of completion should be in future'));
   //If the submited completion date is beyond three months from now give following error
   $max_completion_date = strtotime("+3 months", time());
-  if(mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
+  if (mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
     form_set_error('completion_date', t('Expected date of completion should be less than 3 months from now in future'));
   /* edition */
   if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
     form_set_error('edition1', t('Invalid edition for Book Preference 1'));
-  if ($form_state['values']['book2'])
-  {
-    if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition2']))
-    {
+  if ($form_state['values']['book2']) {
+    if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition2'])) {
       form_set_error('edition2', t('Invalid edition for Book Preference 2'));
     } //!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition2'])
   } //$form_state['values']['book2']
-  if ($form_state['values']['book3'])
-  {
-    if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition3']))
-    {
+  if ($form_state['values']['book3']) {
+    if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition3'])) {
       form_set_error('edition3', t('Invalid edition for Book Preference 3'));
     } //!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition3'])
   } //$form_state['values']['book3']
   /* year of publication */
   if (!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year1']))
     form_set_error('year1', t('Invalid year of pulication for Book Preference 1'));
-  if ($form_state['values']['book2'])
-  {
-    if (!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year2']))
-    {
+  if ($form_state['values']['book2']) {
+    if (!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year2'])) {
       form_set_error('year2', t('Invalid year of pulication for Book Preference 2'));
     } //!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year2'])
   } //$form_state['values']['book2']
-  if ($form_state['values']['book3'])
-  {
-    if (!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year3']))
-    {
+  if ($form_state['values']['book3']) {
+    if (!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year3'])) {
       form_set_error('year3', t('Invalid year of pulication for Book Preference 3'));
     } //!preg_match('/^[1-3][0-9][0-9][0-9]$/', $form_state['values']['year3'])
   } //$form_state['values']['book3']
@@ -905,34 +852,26 @@ function book_proposal_form_validate($form, &$form_state)
   $cur_year = date('Y');
   if ((int) $form_state['values']['year1'] > $cur_year)
     form_set_error('year1', t('Year of pulication should be not in the future for Book Preference 1'));
-  if ($form_state['values']['book2'])
-  {
-    if ((int) $form_state['values']['year2'] > $cur_year)
-    {
+  if ($form_state['values']['book2']) {
+    if ((int) $form_state['values']['year2'] > $cur_year) {
       form_set_error('year2', t('Year of pulication should be not in the future for Book Preference 2'));
     } //(int) $form_state['values']['year2'] > $cur_year
   } //$form_state['values']['book2']
-  if ($form_state['values']['book3'])
-  {
-    if ((int) $form_state['values']['year3'] > $cur_year)
-    {
+  if ($form_state['values']['book3']) {
+    if ((int) $form_state['values']['year3'] > $cur_year) {
       form_set_error('year3', t('Year of pulication should be not in the future for Book Preference 3'));
     } //(int) $form_state['values']['year3'] > $cur_year
   } //$form_state['values']['book3']
   /* isbn */
   if (!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn1']))
     form_set_error('isbn1', t('Invalid ISBN for Book Preference 1'));
-  if ($form_state['values']['book2'])
-  {
-    if (!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn2']))
-    {
+  if ($form_state['values']['book2']) {
+    if (!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn2'])) {
       form_set_error('isbn2', t('Invalid ISBN for Book Preference 2'));
     } //!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn2'])
   } //$form_state['values']['book2']
-  if ($form_state['values']['book3'])
-  {
-    if (!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn3']))
-    {
+  if ($form_state['values']['book3']) {
+    if (!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn3'])) {
       form_set_error('isbn3', t('Invalid ISBN for Book Preference 3'));
     } //!preg_match('/^[0-9\-xX]+$/', $form_state['values']['isbn3'])
   } //$form_state['values']['book3']
@@ -940,66 +879,51 @@ function book_proposal_form_validate($form, &$form_state)
   if (!preg_match('/^\d+(?:\.\d+)+/', $form_state['values']['version']))
     form_set_error('version', t('Please enter correct version in given format'));
   /* country */
-  if ($form_state['values']['country'] == 'Others')
-  {
-    if ($form_state['values']['other_country'] == '')
-    {
+  if ($form_state['values']['country'] == 'Others') {
+    if ($form_state['values']['other_country'] == '') {
       form_set_error('other_country', t('Enter country name'));
     } //$form_state['values']['other_country'] == ''
-    else
-    {
+    else {
       $form_state['values']['country'] = $form_state['values']['other_country'];
     }
-    if ($form_state['values']['other_state'] == '')
-    {
+    if ($form_state['values']['other_state'] == '') {
       form_set_error('other_state', t('Enter state name'));
     } //$form_state['values']['other_state'] == ''
-    else
-    {
+    else {
       $form_state['values']['all_state'] = $form_state['values']['other_state'];
     }
-    if ($form_state['values']['other_city'] == '')
-    {
+    if ($form_state['values']['other_city'] == '') {
       form_set_error('other_city', t('Enter city name'));
     } //$form_state['values']['other_city'] == ''
-    else
-    {
+    else {
       $form_state['values']['city'] = $form_state['values']['other_city'];
     }
   } //$form_state['values']['country'] == 'Others'
-  else
-  {
-    if ($form_state['values']['country'] == '')
-    {
+  else {
+    if ($form_state['values']['country'] == '') {
       form_set_error('country', t('Select country name'));
     } //$form_state['values']['country'] == ''
-    if ($form_state['values']['all_state'] == '')
-    {
+    if ($form_state['values']['all_state'] == '') {
       form_set_error('all_state', t('Select state name'));
     } //$form_state['values']['all_state'] == ''
-    if ($form_state['values']['city'] == '')
-    {
+    if ($form_state['values']['city'] == '') {
       form_set_error('city', t('Select city name'));
     } //$form_state['values']['city'] == ''
   }
-  if (isset($_FILES['files']))
-  {
+  if (isset($_FILES['files'])) {
     /* check if atleast one source or result file is uploaded */
     if (!($_FILES['files']['name']['samplefile1']))
       form_set_error('samplefile1', t('Please upload sample code main or source file.'));
     /* check for valid filename extensions */
-    foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-    {
-      if ($file_name)
-      {
+    foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+      if ($file_name) {
         /* checking file type */
         if (strstr($file_form_name, 'sample'))
           $file_type = 'S';
         else
           $file_type = 'U';
         $allowed_extensions_str = '';
-        switch ($file_type)
-        {
+        switch ($file_type) {
           case 'S':
             $allowed_extensions_str = variable_get('textbook_companion_sample_source_file_extensions', '');
             break;
@@ -1020,13 +944,11 @@ function book_proposal_form_validate($form, &$form_state)
   } //isset($_FILES['files'])
   return;
 }
-function book_proposal_form_submit($form, &$form_state)
-{
+function book_proposal_form_submit($form, &$form_state) {
   global $user;
   $selections = variable_get("aicte_" . $user->uid, "");
   $root_path = textbook_companion_samplecode_path();
-  if (!$user->uid)
-  {
+  if (!$user->uid) {
     drupal_set_message('It is mandatory to login on this website to access the proposal form', 'error');
     return;
   } //!$user->uid
@@ -1073,22 +995,18 @@ function book_proposal_form_submit($form, &$form_state)
   if (!is_dir($root_path . $dest_path))
     mkdir($root_path . $dest_path);
   /* uploading files */
-  foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-  {
-    if ($file_name)
-    {
+  foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+    if ($file_name) {
       /* checking file type */
       $file_type = 'S';
-      if (file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         drupal_set_message(t("Error uploading file. File !filename already exists.", array(
           '!filename' => $_FILES['files']['name'][$file_form_name]
         )), 'error');
         return;
       } //file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
       /* uploading file */
-      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         $query = "UPDATE {textbook_companion_proposal} SET samplefilepath = :samplefilepath WHERE id = :id";
         $args = array(
           ":samplefilepath" => $dest_path . $_FILES['files']['name'][$file_form_name],
@@ -1097,14 +1015,12 @@ function book_proposal_form_submit($form, &$form_state)
         $updateresult = db_query($query, $args);
         drupal_set_message($file_name . ' uploaded successfully.', 'status');
       } //move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
-      else
-      {
+      else {
         drupal_set_message('Error uploading file : ' . $dest_path . '/' . $file_name, 'error');
       }
     } //$file_name
   } //$_FILES['files']['name'] as $file_form_name => $file_name
-  if (!$result)
-  {
+  if (!$result) {
     drupal_set_message(t('Error receiving your proposal. Please try again.'), 'error');
     return;
   } //!$result
@@ -1112,8 +1028,7 @@ function book_proposal_form_submit($form, &$form_state)
   // $proposal_id = db_last_insert_id('textbook_companion_proposal', 'id');
   $proposal_id = $result;
   /* inserting first book preference */
-  if ($form_state['values']['book1'])
-  {
+  if ($form_state['values']['book1']) {
     $query = "INSERT INTO {textbook_companion_preference}
       (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status, book_status) VALUES          (:proposal_id, :pref_number, :book, :author, :isbn, :publisher, :edition, :year, :category, :approval_status, :book_status)
   ";
@@ -1133,12 +1048,10 @@ function book_proposal_form_submit($form, &$form_state)
     $result = db_query($query, $args, array(
       'return' => Database::RETURN_INSERT_ID
     ));
-    if (!$result)
-    {
+    if (!$result) {
       drupal_set_message(t('Error receiving your first book preference.'), 'error');
     } //!$result
-    else
-    {
+    else {
       //$preference_id = db_last_insert_id("textbook_companion_preference", "id");
       $preference_id = $result;
       /*$query = "
@@ -1156,8 +1069,7 @@ function book_proposal_form_submit($form, &$form_state)
     }
   } //$form_state['values']['book1']
   /* inserting second book preference */
-  if ($form_state['values']['book2'])
-  {
+  if ($form_state['values']['book2']) {
     /*$result = db_query("INSERT INTO {textbook_companion_preference}
     (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status) VALUES
     (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s', %d, %d)",
@@ -1191,12 +1103,10 @@ function book_proposal_form_submit($form, &$form_state)
     $result = db_query($query, $args, array(
       'return' => Database::RETURN_INSERT_ID
     ));
-    if (!$result)
-    {
+    if (!$result) {
       drupal_set_message(t('Error receiving your second book preference.'), 'error');
     } //!$result
-    else
-    {
+    else {
       //$preference_id = db_last_insert_id("textbook_companion_preference", "id");
       $preference_id = $result;
       /*$query = "
@@ -1214,8 +1124,7 @@ function book_proposal_form_submit($form, &$form_state)
     }
   } //$form_state['values']['book2']
   /* inserting third book preference */
-  if ($form_state['values']['book3'])
-  {
+  if ($form_state['values']['book3']) {
     $query = "INSERT INTO {textbook_companion_preference}
         (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status) VALUES          (:proposal_id, :pref_number, :book, :author, :isbn, :publisher, :edition, :year, :category, :approval_status)
   ";
@@ -1234,12 +1143,10 @@ function book_proposal_form_submit($form, &$form_state)
     $result = db_query($query, $args, array(
       'return' => Database::RETURN_INSERT_ID
     ));
-    if (!$result)
-    {
+    if (!$result) {
       drupal_set_message(t('Error receiving your third book preference.'), 'error');
     } //!$result
-    else
-    {
+    else {
       $preference_id = $result;
       /*$query = "
       UPDATE textbook_companion_aicte
@@ -1255,8 +1162,7 @@ function book_proposal_form_submit($form, &$form_state)
       $num_updated = $query->execute();
     }
     /* locking the books in the textbook_companion_aicte table */
-    foreach ($selections as $selection)
-    {
+    foreach ($selections as $selection) {
       /*$query = "
       UPDATE textbook_companion_aicte
       SET status = 1, uid = {$user->uid}, proposal_id = {$proposal_id}
@@ -1273,8 +1179,7 @@ function book_proposal_form_submit($form, &$form_state)
       $query->condition('status', 0);
       $num_updated = $query->execute();
     } //$selections as $selection
-    if (!$result)
-    {
+    if (!$result) {
       drupal_set_message(t('Error receiving your third book preference.'), 'error');
     } //!$result
   } //$form_state['values']['book3']
@@ -1300,11 +1205,9 @@ function book_proposal_form_submit($form, &$form_state)
   drupal_goto('');
 }
 /* AJAX CALLS */
-function textbook_companion_ajax()
-{
+function textbook_companion_ajax() {
   $query_type = arg(2);
-  if ($query_type == 'chapter_title')
-  {
+  if ($query_type == 'chapter_title') {
     $chapter_number = arg(3);
     $preference_id = arg(4);
     /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE number = %d AND preference_id = %d LIMIT 1", $chapter_number, $preference_id);*/
@@ -1314,14 +1217,12 @@ function textbook_companion_ajax()
     $query->condition('preference_id', $preference_id);
     $query->range(0, 1);
     $chapter_q = $query->execute();
-    if ($chapter_data = $chapter_q->fetchObject())
-    {
+    if ($chapter_data = $chapter_q->fetchObject()) {
       echo $chapter_data->name;
       return;
     } //$chapter_data = $chapter_q->fetchObject()
   } //$query_type == 'chapter_title'
-  else if ($query_type == 'example_exists')
-  {
+  else if ($query_type == 'example_exists') {
     $chapter_number = arg(3);
     $preference_id = arg(4);
     $example_number = arg(5);
@@ -1333,13 +1234,11 @@ function textbook_companion_ajax()
     $query->condition('preference_id', $preference_id);
     $query->range(0, 1);
     $chapter_q = $query->execute();
-    if (!$chapter_data = $chapter_q->fetchObject())
-    {
+    if (!$chapter_data = $chapter_q->fetchObject()) {
       echo '';
       return;
     } //!$chapter_data = $chapter_q->fetchObject()
-    else
-    {
+    else {
       $chapter_id = $chapter_data->id;
     }
     /*$example_q = db_query("SELECT * FROM {textbook_companion_example} WHERE chapter_id = %d AND number = '%s' LIMIT 1", $chapter_id, $example_number);*/
@@ -1349,8 +1248,7 @@ function textbook_companion_ajax()
     $query->condition('number', $example_number);
     $query->range(0, 1);
     $example_q = $query->execute();
-    if ($example_data = $example_q->fetchObject())
-    {
+    if ($example_data = $example_q->fetchObject()) {
       if ($example_data->approval_status == 1)
         echo 'Warning! Example already approved. You cannot upload the same example again.';
       else
@@ -1361,8 +1259,7 @@ function textbook_companion_ajax()
   echo '';
 }
 /*  Non aicte book proposal form */
-function book_proposal_nonaicte_form($form, &$form_state)
-{
+function book_proposal_nonaicte_form($form, &$form_state) {
   global $user;
   $form = array();
   $form['imp_notice'] = array(
@@ -1577,12 +1474,12 @@ function book_proposal_nonaicte_form($form, &$form_state)
   );
   /*
   $form['completion_date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Expected Date of Completion'),
-    '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
-    '#size' => 10,
-    '#maxlength' => 10,
-    '#required' => TRUE
+  '#type' => 'textfield',
+  '#title' => t('Expected Date of Completion'),
+  '#description' => t('Input date format should be DD-MM-YYYY. Eg: 23-03-2011'),
+  '#size' => 10,
+  '#maxlength' => 10,
+  '#required' => TRUE
   );
   */
   $form['completion_date'] = array(
@@ -1734,15 +1631,14 @@ function book_proposal_nonaicte_form($form, &$form_state)
   );
   return $form;
 }
-function book_proposal_nonaicte_form_validate($form, &$form_state)
-{
+function book_proposal_nonaicte_form_validate($form, &$form_state) {
   /* mobile */
   if (!preg_match('/^[0-9\ \+]{0,15}$/', $form_state['values']['mobile']))
     form_set_error('mobile', t('Invalid mobile number'));
   /* date of completion */
   /*
   if (!preg_match('/^[0-9]{1,2}-[0-9]{1,2}-[0-9]{4}$/', $form_state['values']['completion_date']))
-    form_set_error('completion_date', t('Invalid expected date of completion'));
+  form_set_error('completion_date', t('Invalid expected date of completion'));
   */
   list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
   $d = (int) $d;
@@ -1754,7 +1650,7 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
     form_set_error('completion_date', t('Expected date of completion should be in future'));
   //If the submited completion date is beyond three months from now give following error
   $max_completion_date = strtotime("+3 months", time());
-  if(mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
+  if (mktime(0, 0, 0, $m, $d, $y) > $max_completion_date)
     form_set_error('completion_date', t('Expected date of completion should be less than 3 months from now in future'));
   /* edition */
   if (!preg_match('/^[1-9][0-9]{0,1}$/', $form_state['values']['edition1']))
@@ -1771,72 +1667,57 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
     form_set_error('isbn1', t('Invalid ISBN for Book Preference 1'));
   if (!preg_match('/^\d+(?:\.\d+)+/', $form_state['values']['version']))
     form_set_error('version', t('Please enter correct version in speacifed format'));
-  if ($form_state['values']['country'] == 'Others')
-  {
-    if ($form_state['values']['other_country'] == '')
-    {
+  if ($form_state['values']['country'] == 'Others') {
+    if ($form_state['values']['other_country'] == '') {
       form_set_error('other_country', t('Enter country name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['other_country'] == ''
-    else
-    {
+    else {
       $form_state['values']['country'] = $form_state['values']['other_country'];
     }
-    if ($form_state['values']['other_state'] == '')
-    {
+    if ($form_state['values']['other_state'] == '') {
       form_set_error('other_state', t('Enter state name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['other_state'] == ''
-    else
-    {
+    else {
       $form_state['values']['all_state'] = $form_state['values']['other_state'];
     }
-    if ($form_state['values']['other_city'] == '')
-    {
+    if ($form_state['values']['other_city'] == '') {
       form_set_error('other_city', t('Enter city name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['other_city'] == ''
-    else
-    {
+    else {
       $form_state['values']['city'] = $form_state['values']['other_city'];
     }
   } //$form_state['values']['country'] == 'Others'
-  else
-  {
-    if ($form_state['values']['country'] == '')
-    {
+  else {
+    if ($form_state['values']['country'] == '') {
       form_set_error('country', t('Select country name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['country'] == ''
-    if ($form_state['values']['all_state'] == '')
-    {
+    if ($form_state['values']['all_state'] == '') {
       form_set_error('all_state', t('Select state name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['all_state'] == ''
-    if ($form_state['values']['city'] == '')
-    {
+    if ($form_state['values']['city'] == '') {
       form_set_error('city', t('Select city name'));
       // $form_state['values']['country'] = $form_state['values']['other_country'];
     } //$form_state['values']['city'] == ''
   }
-  if (isset($_FILES['files']))
-  {
+  if (isset($_FILES['files'])) {
     /* check if atleast one source or result file is uploaded */
     if (!($_FILES['files']['name']['samplefile1']))
       form_set_error('samplefile1', t('Please upload sample code main or source file.'));
     /* check for valid filename extensions */
-    foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-    {
-      if ($file_name)
-      {
+    foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+      if ($file_name) {
         /* checking file type */
         if (strstr($file_form_name, 'sample'))
           $file_type = 'S';
         else
           $file_type = 'U';
         $allowed_extensions_str = '';
-        switch ($file_type)
-        {
+        switch ($file_type) {
           case 'S':
             $allowed_extensions_str = variable_get('textbook_companion_sample_source_file_extensions', '');
             break;
@@ -1856,14 +1737,12 @@ function book_proposal_nonaicte_form_validate($form, &$form_state)
   } //isset($_FILES['files'])
   return;
 }
-function book_proposal_nonaicte_form_submit($form, &$form_state)
-{
+function book_proposal_nonaicte_form_submit($form, &$form_state) {
   global $user;
   $root_path = textbook_companion_samplecode_path();
   $selections = variable_get("aicte_" . $user->uid, "");
   $tbc_to_emails = variable_get("textbook_companion_emails_all");
-  if (!$user->uid)
-  {
+  if (!$user->uid) {
     drupal_set_message('It is mandatory to login on this website to access the proposal form', 'error');
     return;
   } //!$user->uid
@@ -1871,14 +1750,11 @@ function book_proposal_nonaicte_form_submit($form, &$form_state)
   list($y, $m, $d) = explode('-', $form_state['values']['completion_date']);
   $completion_date_timestamp = mktime(0, 0, 0, $m, $d, $y);
   /* Reasons for suggesting a book*/
-  if (isset($_POST['reason']))
-  {
-    if (!($form_state['values']['other_reason']))
-    {
+  if (isset($_POST['reason'])) {
+    if (!($form_state['values']['other_reason'])) {
       $my_reason = implode(", ", $_POST['reason']);
     } //!($form_state['values']['other_reason'])
-    else
-    {
+    else {
       $my_reason = implode(", ", $_POST['reason']);
       $my_reason = $my_reason . "-" . " " . $form_state['values']['other_reason'];
     }
@@ -1927,27 +1803,22 @@ INSERT INTO {textbook_companion_proposal}
     'return' => Database::RETURN_INSERT_ID
   ));
   $dest_path = $result . '/';
-  if (!is_dir($root_path . $dest_path))
-  {
+  if (!is_dir($root_path . $dest_path)) {
     mkdir($root_path . $dest_path);
   } //!is_dir($root_path . $dest_path)
   /* uploading files */
-  foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-  {
-    if ($file_name)
-    {
+  foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+    if ($file_name) {
       /* checking file type */
       $file_type = 'S';
-      if (file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         drupal_set_message(t("Error uploading file. File !filename already exists.", array(
           '!filename' => $_FILES['files']['name'][$file_form_name]
         )), 'error');
         return;
       } //file_exists($root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
       /* uploading file */
-      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         $query = "UPDATE {textbook_companion_proposal} SET samplefilepath = :samplefilepath WHERE id = :id";
         $args = array(
           ":samplefilepath" => $dest_path . $_FILES['files']['name'][$file_form_name],
@@ -1956,22 +1827,19 @@ INSERT INTO {textbook_companion_proposal}
         $updateresult = db_query($query, $args);
         drupal_set_message($file_name . ' uploaded successfully.', 'status');
       } //move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
-      else
-      {
+      else {
         drupal_set_message('Error uploading file : ' . $dest_path . $file_name, 'error');
       }
     } //$file_name
   } //$_FILES['files']['name'] as $file_form_name => $file_name
-  if (!$result)
-  {
+  if (!$result) {
     drupal_set_message(t('Error receiving your proposal. Please try again.'), 'error');
     return;
   } //!$result
   /* proposal id */
   $proposal_id = $result;
   /* inserting first book preference */
-  if ($form_state['values']['book1'])
-  {
+  if ($form_state['values']['book1']) {
     $query = "INSERT INTO {textbook_companion_preference}
       (proposal_id, pref_number, book, author, isbn, publisher, edition, year, category, approval_status, nonaicte_book) VALUES
  (:proposal_id, :pref_number, :book, :author, :isbn, :publisher, :edition, :year, :category, :approval_status, :nonaicte_book)";
@@ -1989,8 +1857,7 @@ INSERT INTO {textbook_companion_proposal}
       ":nonaicte_book" => 1
     );
     $result = db_query($query, $args);
-    if (!$result)
-    {
+    if (!$result) {
       drupal_set_message(t('Error receiving your first book preference.'), 'error');
     } //!$result
   } //$form_state['values']['book1']

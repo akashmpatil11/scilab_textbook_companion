@@ -1,7 +1,6 @@
 <?php
 // $Id$
-function list_chapters()
-{
+function list_chapters() {
   global $user;
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
@@ -76,9 +75,8 @@ function list_chapters()
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -109,13 +107,12 @@ function list_chapters()
     }
   }
   /************************ end approve book details **************************/
-  if($preference_data->submited_all_examples_code)
-  {
+  if ($preference_data->submited_all_examples_code) {
     drupal_set_message('Book has sent for Review. You can not add or make changes to your codes.', 'warning');
     $return_html = '<br />';
     $return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
     $return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
-    $return_html .= 'Upload Example Code'.'<br />';
+    $return_html .= 'Upload Example Code' . '<br />';
     /* get chapter list */
     $chapter_rows = array();
     /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number ASC", $preference_data->id);*/
@@ -124,8 +121,7 @@ function list_chapters()
     $query->condition('preference_id', $preference_data->id);
     $query->orderBy('number', 'ASC');
     $chapter_q = $query->execute();
-    while ($chapter_data = $chapter_q->fetchObject())
-    {
+    while ($chapter_data = $chapter_q->fetchObject()) {
       /* get example list */
       /* $example_q = db_query("SELECT count(*) as example_count FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_data->id);
       $example_data = db_fetch_object($example_q);*/
@@ -136,14 +132,13 @@ function list_chapters()
       $example_data = $result->fetchObject();
       $chapter_rows[] = array(
         $chapter_data->number,
-        $chapter_data->name . ' (' .'Edit'.'|'.'Delete'. ')',
+        $chapter_data->name . ' (' . 'Edit' . '|' . 'Delete' . ')',
         $example_data->example_count,
-        'View',
+        'View'
       );
     } //$chapter_data = $chapter_q->fetchObject()
     /* check if there are any chapters */
-    if (!$chapter_rows)
-    {
+    if (!$chapter_rows) {
       drupal_set_message(t('No uploads found.'), 'status');
       return $return_html;
     } //!$chapter_rows
@@ -156,16 +151,14 @@ function list_chapters()
     $return_html .= theme('table', array(
       'header' => $chapter_header,
       'rows' => $chapter_rows
-    )).'<br/>';
+    )) . '<br/>';
     $return_html .= drupal_render($submited_all_example);
-  }
-  else
-  {
+  } else {
     $return_html = '<br />';
     $return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
     $return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
     $return_html .= l('Upload Example Code', 'textbook_companion/code/upload') . '<br />';
-      /* get chapter list */
+    /* get chapter list */
     $chapter_rows = array();
     /*$chapter_q = db_query("SELECT * FROM {textbook_companion_chapter} WHERE preference_id = %d ORDER BY number ASC", $preference_data->id);*/
     $query = db_select('textbook_companion_chapter');
@@ -173,8 +166,7 @@ function list_chapters()
     $query->condition('preference_id', $preference_data->id);
     $query->orderBy('number', 'ASC');
     $chapter_q = $query->execute();
-    while ($chapter_data = $chapter_q->fetchObject())
-    {
+    while ($chapter_data = $chapter_q->fetchObject()) {
       /* get example list */
       /* $example_q = db_query("SELECT count(*) as example_count FROM {textbook_companion_example} WHERE chapter_id = %d", $chapter_data->id);
       $example_data = db_fetch_object($example_q);*/
@@ -185,18 +177,17 @@ function list_chapters()
       $example_data = $result->fetchObject();
       $chapter_rows[] = array(
         $chapter_data->number,
-        $chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . '|'.l('Delete', 'textbook_companion/code/chapter/delete/'. $chapter_data->id, array(
-              'attributes' => array(
-                'onClick' => 'return confirm("Are you sure you want to delete the Chapter? Once you delete chapter, all the codes related to chapter will be deleted.")'
-              )
-            )).')',
+        $chapter_data->name . ' (' . l('Edit', 'textbook_companion/code/chapter/edit/' . $chapter_data->id) . '|' . l('Delete', 'textbook_companion/code/chapter/delete/' . $chapter_data->id, array(
+          'attributes' => array(
+            'onClick' => 'return confirm("Are you sure you want to delete the Chapter? Once you delete chapter, all the codes related to chapter will be deleted.")'
+          )
+        )) . ')',
         $example_data->example_count,
         l('View', 'textbook_companion/code/list_examples/' . $chapter_data->id)
       );
     } //$chapter_data = $chapter_q->fetchObject()
     /* check if there are any chapters */
-    if (!$chapter_rows)
-    {
+    if (!$chapter_rows) {
       drupal_set_message(t('No uploads found.'), 'status');
       return $return_html;
     } //!$chapter_rows
@@ -209,14 +200,13 @@ function list_chapters()
     $return_html .= theme('table', array(
       'header' => $chapter_header,
       'rows' => $chapter_rows
-    )).'<br/>';
+    )) . '<br/>';
     $submited_all_example = drupal_get_form("all_example_submitted_check_form", $preference_data->id);
     $return_html .= drupal_render($submited_all_example);
   }
   return $return_html;
 }
-function list_examples()
-{
+function list_examples() {
   global $user;
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
@@ -291,9 +281,8 @@ function list_examples()
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -333,16 +322,14 @@ function list_examples()
   $query->condition('preference_id', $preference_data->id);
   $query->range(0, 1);
   $chapter_q = $query->execute();
-  if ($chapter_data = $chapter_q->fetchObject())
-  {
+  if ($chapter_data = $chapter_q->fetchObject()) {
     $return_html = '<br />';
     $return_html .= '<strong>Title of the Book:</strong><br />' . $preference_data->book . '<br /><br />';
     $return_html .= '<strong>Contributor Name:</strong><br />' . $proposal_data->full_name . '<br /><br />';
     $return_html .= '<strong>Chapter Number:</strong><br />' . $chapter_data->number . '<br /><br />';
     $return_html .= '<strong>Title of the Chapter:</strong><br />' . $chapter_data->name . '<br />';
   } //$chapter_data = $chapter_q->fetchObject()
-  else
-  {
+  else {
     drupal_set_message(t('Invalid chapter.'), 'error');
     drupal_goto('textbook_companion/code');
     return;
@@ -358,12 +345,10 @@ function list_examples()
   $query->fields('textbook_companion_example');
   $query->condition('chapter_id', $chapter_id);
   $example_q = $query->execute();
-  while ($example_data = $example_q->fetchObject())
-  {
+  while ($example_data = $example_q->fetchObject()) {
     /* approval status */
     $approval_status = '';
-    switch ($example_data->approval_status)
-    {
+    switch ($example_data->approval_status) {
       case 0:
         $approval_status = 'Pending';
         break;
@@ -382,11 +367,9 @@ function list_examples()
     $query->condition('example_id', $example_data->id);
     $query->orderBy('filetype', 'ASC');
     $example_files_q = $query->execute();
-    while ($example_files_data = $example_files_q->fetchObject())
-    {
+    while ($example_files_data = $example_files_q->fetchObject()) {
       $file_type = '';
-      switch ($example_files_data->filetype)
-      {
+      switch ($example_files_data->filetype) {
         case 'S':
           $file_type = 'Main or Source';
           break;
@@ -413,13 +396,11 @@ function list_examples()
     $query->innerJoin('textbook_companion_dependency_files', 'dependency', 'example_dependency.dependency_id = dependency.id');
     $query->condition('example_dependency.example_id', $example_data->id);
     $dependency_files_q = $query->execute();*/
-    while ($dependency_files_data = $dependency_files_q->fetchObject())
-    {
+    while ($dependency_files_data = $dependency_files_q->fetchObject()) {
       $dependency_files .= l($dependency_files_data->dependency_filename, 'download/dependency/' . $dependency_files_data->dependency_id) . ' (Dependency)<br />';
     } //$dependency_files_data = $dependency_files_q->fetchObject()
     $example_files .= $dependency_files;
-    if ($example_data->approval_status == 0)
-    {
+    if ($example_data->approval_status == 0) {
       $example_rows[] = array(
         'data' => array(
           $example_data->number,
@@ -428,16 +409,15 @@ function list_examples()
           $example_files,
           l('Edit', 'textbook_companion/code/edit/' . $example_data->id)
           /*l('Edit', 'textbook_companion/code/edit/' . $example_data->id) . ' | ' . l('Delete', 'textbook_companion/code/delete/' . $example_data->id, array(
-            'attributes' => array(
-              'onClick' => 'return confirm("Are you sure you want to delete the example?")'
-            )
+          'attributes' => array(
+          'onClick' => 'return confirm("Are you sure you want to delete the example?")'
+          )
           ))*/
         ),
         'valign' => 'top'
       );
     } //$example_data->approval_status == 0
-    else
-    {
+    else {
       $example_rows[] = array(
         'data' => array(
           $example_data->number,
@@ -464,14 +444,13 @@ function list_examples()
   return $return_html;
 }
 /*Form to confirm book completion*/
-function all_example_submitted_check_form($form, &$form_state, $preference_id)
-{
+function all_example_submitted_check_form($form, &$form_state, $preference_id) {
   $form = array();
   $form['all_example_submitted'] = array(
     '#type' => 'checkbox',
     '#title' => t('I have submitted codes for all the examples'),
     '#description' => 'Once you have submited this option you are not able to upload more examples.',
-    '#required' => TRUE,
+    '#required' => TRUE
   );
   $form['preference_id'] = array(
     '#type' => 'hidden',
@@ -484,14 +463,13 @@ function all_example_submitted_check_form($form, &$form_state, $preference_id)
   return $form;
 }
 /*Validation of all_example_submitted_check_form*/
-function all_example_submitted_check_form_validate($form, &$form_state)
-{
+function all_example_submitted_check_form_validate($form, &$form_state) {
   /*check for all_example_submitted = 1*/
   if ($form_state['values']['all_example_submitted'] != 1) {
     form_set_error('all_example_submitted', t('Please check the field if you are intrested to submit the all uploaded examples for review!'));
   }
   /*check for empty book*/
-  if(!check_book($form_state['values']['preference_id'])) {
+  if (!check_book($form_state['values']['preference_id'])) {
     form_set_error('all_example_submitted', t('You have not uploaded single code'));
   }
   return;
@@ -501,8 +479,7 @@ function all_example_submitted_check_form_validate($form, &$form_state)
  *If error occurs send mail to user and keep submited_all_examples_code = 0
  *If no error found lock the book, submited_all_examples_code = 1, and mail to user, cc, bcc
  */
-function all_example_submitted_check_form_submit($form, &$form_state, $preference_id)
-{
+function all_example_submitted_check_form_submit($form, &$form_state, $preference_id) {
   global $user;
   if ($form_state['values']['all_example_submitted'] == 1) {
     db_query('UPDATE {textbook_companion_preference} SET submited_all_examples_code = 0  WHERE id = :preference_id', array(
@@ -522,10 +499,11 @@ function all_example_submitted_check_form_submit($form, &$form_state, $preferenc
     $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
     //exec("chmod -R 777"." ".$book_path);
     $return = shell_exec($sh_command);
-    var_dump($return);die;
+    var_dump($return);
+    die;
     /**
-    *Sending mail to user about Submission Locking
-    */
+     *Sending mail to user about Submission Locking
+     */
     $query = db_select('textbook_companion_proposal');
     $query->fields('textbook_companion_proposal');
     $query->condition('id', $form_state['values']['preference_id']);
@@ -598,7 +576,7 @@ function check_chapter($chapter_id) {
   $query->condition('chapter_id', $chapter_id);
   $example_q = $query->execute();
   while ($example_data = $example_q->fetchObject())
-    $status =  ($status || check_example($example_data->id));
+    $status = ($status || check_example($example_data->id));
   return $status;
 }
 /*function to check wheather example contains example file or not*/
@@ -634,6 +612,6 @@ function check_example($example_id) {
   $query->condition('example_id', $example_id);
   $examples_files_q = $query->execute();
   while ($examples_files_data = $examples_files_q->fetchObject())
-      $status = ($status || file_exists($root_path . $examples_files_data->filepath));
+    $status = ($status || file_exists($root_path . $examples_files_data->filepath));
   return $status;
 }

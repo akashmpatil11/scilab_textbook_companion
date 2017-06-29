@@ -1,7 +1,6 @@
 <?php
 // $Id$
-function upload_dependency_form($form, &$form_state)
-{
+function upload_dependency_form($form, &$form_state) {
   global $user;
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
@@ -76,9 +75,8 @@ function upload_dependency_form($form, &$form_state)
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -159,8 +157,7 @@ function upload_dependency_form($form, &$form_state)
   );
   return $form;
 }
-function upload_dependency_form_validate($form, &$form_state)
-{
+function upload_dependency_form_validate($form, &$form_state) {
   global $user;
   /* get approved book details */
   /*$book_q = db_query("SELECT pro.id as pro_id, pre.id as pre_id, pre.book as pre_book, pro.full_name as pro_full_name FROM {textbook_companion_proposal} pro JOIN {textbook_companion_preference} pre ON pro.id = pre.proposal_id WHERE pro.proposal_status = 1 AND pre.approval_status = 1 AND pro.uid = %d", $user->uid);
@@ -180,14 +177,11 @@ function upload_dependency_form_validate($form, &$form_state)
   $query->condition('pro.uid', $user->uid);
   $result = $query->execute();
   $book_data = $result->fetchObject();
-  if (isset($_FILES['files']))
-  {
+  if (isset($_FILES['files'])) {
     /* check for valid filename extensions */
     $allowed_extensions = explode(',', variable_get('textbook_companion_dependency_extensions', ''));
-    foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-    {
-      if ($file_name)
-      {
+    foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+      if ($file_name) {
         $temp_extension = end(explode('.', strtolower($_FILES['files']['name'][$file_form_name])));
         if (!in_array($temp_extension, $allowed_extensions))
           form_set_error($file_form_name, t('Only ' . variable_get('textbook_companion_dependency_extensions', '') . ' extensions can be uploaded.'));
@@ -209,8 +203,7 @@ function upload_dependency_form_validate($form, &$form_state)
     } //$_FILES['files']['name'] as $file_form_name => $file_name
   } //isset($_FILES['files'])
 }
-function upload_dependency_form_submit($form, &$form_state)
-{
+function upload_dependency_form_submit($form, &$form_state) {
   global $user;
   $root_path = textbook_companion_path();
   /* get approved book details */
@@ -286,9 +279,8 @@ function upload_dependency_form_submit($form, &$form_state)
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -329,13 +321,10 @@ function upload_dependency_form_submit($form, &$form_state)
   $file_upload_counter = 0;
   $dependency_ids = array();
   $dependency_names = array();
-  foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-  {
-    if ($file_name)
-    {
+  foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+    if ($file_name) {
       /* uploading file */
-      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         /* for uploaded files making an entry in the database */
         /* db_query("INSERT INTO {textbook_companion_dependency_files} (preference_id, filename, filepath, filemime, filesize, caption, description, timestamp)
         VALUES (%d, '%s', '%s', '%s', %d, '%s', '%s', %d)",
@@ -369,14 +358,12 @@ function upload_dependency_form_submit($form, &$form_state)
         $dependency_names[] = $_FILES['files']['name'][$file_form_name];
         $file_upload_counter++;
       } //move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
-      else
-      {
+      else {
         drupal_set_message('Error uploading dependency : ' . $dest_path . '/' . $_FILES['files']['name'][$file_form_name], 'error');
       }
     } //$file_name
   } //$_FILES['files']['name'] as $file_form_name => $file_name
-  if ($file_upload_counter > 0)
-  {
+  if ($file_upload_counter > 0) {
     drupal_set_message('Dependencies uploaded successfully.', 'status');
     /* sending email */
     $params['dependency_uploaded']['user_id'] = $user->uid;
@@ -387,8 +374,7 @@ function upload_dependency_form_submit($form, &$form_state)
   } //$file_upload_counter > 0
   drupal_goto('textbook_companion/code/upload_dep');
 }
-function _list_existing_dependency($book_id)
-{
+function _list_existing_dependency($book_id) {
   // $return_html = '<ul>';
   $return_html = "";
   /*$query = "SELECT * FROM textbook_companion_dependency_files WHERE preference_id = %d ORDER BY filename ASC";
@@ -403,8 +389,7 @@ function _list_existing_dependency($book_id)
     "Action"
   );
   $rows = array();
-  while ($row = $result->fetchObject())
-  {
+  while ($row = $result->fetchObject()) {
     $item = array(
       l($row->filename . $temp_caption, 'download/dependency/' . $row->id),
       l("Edit", "textbook_companion/code/edit_dep/{$row->id}") . " | " . l("Delete", "textbook_companion/code/delete_dep/{$row->id}")
@@ -418,8 +403,7 @@ function _list_existing_dependency($book_id)
   return $return_html;
 }
 /******************** edit dependency section ********************/
-function edit_dependency_form($form_state, $dependency_id = 0)
-{
+function edit_dependency_form($form_state, $dependency_id = 0) {
   global $user;
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
@@ -494,9 +478,8 @@ function edit_dependency_form($form_state, $dependency_id = 0)
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -580,17 +563,13 @@ function edit_dependency_form($form_state, $dependency_id = 0)
   );
   return $form;
 }
-function edit_dependency_form_validate($form, &$form_state)
-{
+function edit_dependency_form_validate($form, &$form_state) {
   global $user;
-  if (isset($_FILES['files']))
-  {
+  if (isset($_FILES['files'])) {
     /* check for valid filename extensions */
     $allowed_extensions = explode(',', variable_get('textbook_companion_dependency_extensions', ''));
-    foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-    {
-      if ($file_name)
-      {
+    foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+      if ($file_name) {
         $temp_extension = end(explode('.', strtolower($_FILES['files']['name'][$file_form_name])));
         if (!in_array($temp_extension, $allowed_extensions))
           form_set_error($file_form_name, t('Only ' . variable_get('textbook_companion_dependency_extensions', '') . ' extensions can be uploaded.'));
@@ -619,8 +598,7 @@ function edit_dependency_form_validate($form, &$form_state)
     } //$_FILES['files']['name'] as $file_form_name => $file_name
   } //isset($_FILES['files'])
 }
-function edit_dependency_form_submit($form, &$form_state)
-{
+function edit_dependency_form_submit($form, &$form_state) {
   global $user;
   $root_path = textbook_companion_path();
   /* get approved book details */
@@ -696,9 +674,8 @@ function edit_dependency_form_submit($form, &$form_state)
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -751,20 +728,16 @@ function edit_dependency_form_submit($form, &$form_state)
   $query->condition('id', $form_state["values"]["dependency_id"]);
   $result = $query->execute();
   $row = $result->fetchObject();
-  if ($row->filename != $_FILES["files"]["name"][$file_form_name] && $_FILES["files"]["name"][$file_form_name])
-  {
+  if ($row->filename != $_FILES["files"]["name"][$file_form_name] && $_FILES["files"]["name"][$file_form_name]) {
     unlink($root_path . $dest_path . $row->filename);
   } //$row->filename != $_FILES["files"]["name"][$file_form_name] && $_FILES["files"]["name"][$file_form_name]
-  foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-  {
-    if ($file_name)
-    {
+  foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+    if ($file_name) {
       /*
        * uploading file
        * file will be overwritten if same name
        */
-      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name]))
-      {
+      if (move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])) {
         /* updating uploaded file entry in the database */
         /*db_query(
         "UPDATE {textbook_companion_dependency_files} SET
@@ -797,14 +770,12 @@ function edit_dependency_form_submit($form, &$form_state)
         $dependency_names[] = $_FILES['files']['name'][$file_form_name];
         $file_upload_counter++;
       } //move_uploaded_file($_FILES['files']['tmp_name'][$file_form_name], $root_path . $dest_path . $_FILES['files']['name'][$file_form_name])
-      else
-      {
+      else {
         drupal_set_message('Error uploading dependency : ' . $dest_path . '/' . $_FILES['files']['name'][$file_form_name], 'error');
       }
     } //$file_name
   } //$_FILES['files']['name'] as $file_form_name => $file_name
-  if ($file_upload_counter > 0)
-  {
+  if ($file_upload_counter > 0) {
     drupal_set_message('Dependencies uploaded successfully.', 'status');
     /* sending email */
     $from = variable_get('textbook_companion_from_email', '');
@@ -827,22 +798,18 @@ function edit_dependency_form_submit($form, &$form_state)
   } //$file_upload_counter > 0
   drupal_goto('textbook_companion/code/upload_dep');
 }
-function edit_dependency($dependency_id = 0)
-{
-  if ($dependency_id)
-  {
+function edit_dependency($dependency_id = 0) {
+  if ($dependency_id) {
     $page_content = "";
     $page_content .= drupal_get_form("edit_dependency_form", $dependency_id);
     return $page_content;
   } //$dependency_id
-  else
-  {
+  else {
     drupal_goto("textbook_companion/code/upload_dep");
   }
 }
 /******************** delete dependency section ********************/
-function delete_dependency($dependency_id = 0, $confirm = "")
-{
+function delete_dependency($dependency_id = 0, $confirm = "") {
   global $user;
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
@@ -917,9 +884,8 @@ function delete_dependency($dependency_id = 0, $confirm = "")
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -951,8 +917,7 @@ function delete_dependency($dependency_id = 0, $confirm = "")
   }
   /************************ end approve book details **************************/
   $page_content = "";
-  if ($dependency_id && $confirm == "yes")
-  {
+  if ($dependency_id && $confirm == "yes") {
     /* removing the dependency file from filesystem */
     /*$query = "
     SELECT * FROM {textbook_companion_dependency_files}
@@ -965,8 +930,7 @@ function delete_dependency($dependency_id = 0, $confirm = "")
     $query->condition('id', $dependency_id);
     $result = $query->execute();
     $row = $result->fetchObject();
-    if ($preference_data->id == $row->preference_id)
-    {
+    if ($preference_data->id == $row->preference_id) {
       $root_path = textbook_companion_path();
       $dest_path = $row->preference_id . '/';
       $dest_path .= 'DEPENDENCIES' . '/';
@@ -992,14 +956,12 @@ function delete_dependency($dependency_id = 0, $confirm = "")
       drupal_set_message("Dependency deleted successfully.");
       drupal_goto("textbook_companion/code/upload_dep");
     } //$preference_data->id == $row->preference_id
-    else
-    {
+    else {
       drupal_set_message("Cannot delete other users dependency.", "error");
       drupal_goto("textbook_companion/code/upload_dep");
     }
   } //$dependency_id && $confirm == "yes"
-  else if ($dependency_id)
-  {
+  else if ($dependency_id) {
     /*$query = "
     SELECT * FROM {textbook_companion_dependency_files}
     WHERE id = %d
@@ -1011,8 +973,7 @@ function delete_dependency($dependency_id = 0, $confirm = "")
     $query->condition('id', $dependency_id);
     $result = $query->execute();
     $row = $result->fetchObject();
-    if ($preference_data->id == $row->preference_id)
-    {
+    if ($preference_data->id == $row->preference_id) {
       $page_content .= "Are you sure you want to delete this dependency?<br><br>";
       $page_content .= "Dependency filename: <b>{$row->filename}</b><br><br>";
       /* fetching the examples linked to this dependency */
@@ -1028,12 +989,10 @@ function delete_dependency($dependency_id = 0, $confirm = "")
       $query->condition('dep.id', $dependency_id);
       $result = $query->execute();
       $list = "";
-      while ($row = $result->fetchObject())
-      {
+      while ($row = $result->fetchObject()) {
         $list .= "<li>Example {$row->number}</li>";
       } //$row = $result->fetchObject()
-      if ($list)
-      {
+      if ($list) {
         $page_content .= "List of examples linking to this dependency are:";
         $page_content .= "<ul>{$list}</ul>";
       } //$list
@@ -1041,14 +1000,12 @@ function delete_dependency($dependency_id = 0, $confirm = "")
       $page_content .= " | ";
       $page_content .= l("Cancel", "textbook_companion/code/upload_dep");
     } //$preference_data->id == $row->preference_id
-    else
-    {
+    else {
       drupal_set_message("Cannot delete other users dependency.", "error");
       drupal_goto("textbook_companion/code/upload_dep");
     }
   } //$dependency_id
-  else
-  {
+  else {
     drupal_goto("textbook_companion/code/upload_dep");
   }
   return $page_content;

@@ -2,15 +2,13 @@
 /**
  * Implementation of hook_mail().
  */
-function textbook_companion_mail($key, &$message, $params)
-{
+function textbook_companion_mail($key, &$message, $params) {
   global $user;
   $language = $message['language'];
   /*$tbc_bcc_emails = array(
   'Bcc' => variable_get('textbook_companion_emails', ''),
   );*/
-  switch ($key)
-  {
+  switch ($key) {
     case 'proposal_received':
       // bcc to textbook_companion_emails
       //$message['headers'] += $tbc_bcc_emails;
@@ -24,12 +22,10 @@ function textbook_companion_mail($key, &$message, $params)
       $result = $query->execute();
       $proposal_data = $result->fetchObject();
       $samplecodefilename = "";
-      if (strlen($proposal_data->samplefilepath) >= 5)
-      {
+      if (strlen($proposal_data->samplefilepath) >= 5) {
         $samplecodefilename = substr($proposal_data->samplefilepath, strrpos($proposal_data->samplefilepath, '/') + 1);
       } //strlen($proposal_data->samplefilepath) >= 5
-      else
-      {
+      else {
         $samplecodefilename = "Not provided";
       }
       /*$preference1_q = db_query("SELECT * FROM {textbook_companion_preference} WHERE proposal_id = %d AND pref_number = %d LIMIT 1", $params['proposal_received']['proposal_id'], 1);
@@ -58,8 +54,8 @@ function textbook_companion_mail($key, &$message, $params)
       );
       $preference2_q = db_query($query, $args);
       $preference2_data = $preference2_q->fetchObject();
-      if($preference2_data->book){
-      $book_preference2 = '
+      if ($preference2_data->book) {
+        $book_preference2 = '
 Book Preference 2 :-
 Title of the book : ' . $preference2_data->book . '
 Author name : ' . $preference2_data->author . '
@@ -81,8 +77,8 @@ Category : ' . $preference2_data->category_name . '
       );
       $preference3_q = db_query($query, $args);
       $preference3_data = $preference3_q->fetchObject();
-      if($preference3_data->book){
-      $book_preference3 = '
+      if ($preference3_data->book) {
+        $book_preference3 = '
 Book Preference 3 :-
 Title of the book : ' . $preference3_data->book . '
 Author name : ' . $preference3_data->author . '
@@ -133,11 +129,7 @@ Publisher and Place : ' . $preference1_data->publisher . '
 Edition : ' . $preference1_data->edition . '
 Year of publication : ' . $preference1_data->year . '
 Category : ' . $preference1_data->category_name . '
-'. ' '.
-$book_preference2
-.' '.
-$book_preference2
-.'
+' . ' ' . $book_preference2 . ' ' . $book_preference2 . '
 
 Uploaded Sample Code : ' . $samplecodefilename . '
 
@@ -184,8 +176,8 @@ FOSSEE, IIT Bombay', array(
       $query->range(0, 1);
       $result = $query->execute();
       $preference2_data = $result->fetchObject();
-      if($preference2_data->book){
-      $book_preference2 = '
+      if ($preference2_data->book) {
+        $book_preference2 = '
 Book Preference 2 :-
 Title of the book : ' . $preference2_data->book . '
 Author name : ' . $preference2_data->author . '
@@ -205,8 +197,8 @@ Category : ' . $preference2_data->category_name . '
       $query->range(0, 1);
       $result = $query->execute();
       $preference3_data = $result->fetchObject();
-      if($preference3_data->book){
-      $book_preference3 = '
+      if ($preference3_data->book) {
+        $book_preference3 = '
 Book Preference 3 :-
 Title of the book : ' . $preference3_data->book . '
 Author name : ' . $preference3_data->author . '
@@ -224,8 +216,7 @@ Category : ' . $preference3_data->category_name . '
       ), array(
         'language' => $language->language
       ));
-      if ($proposal_data->proposal_type != 1)
-      {
+      if ($proposal_data->proposal_type != 1) {
         $message['body'] = array(
           'body' => t('
 Dear !user_name,
@@ -253,12 +244,7 @@ ISBN No. : ' . $preference1_data->isbn . '
 Publisher and Place : ' . $preference1_data->publisher . '
 Edition : ' . $preference1_data->edition . '
 Year of publication : ' . $preference1_data->year . '
-Category : ' . $preference1_data->category_name . ''.
-
-$book_preference2
-.' '.
-$book_preference2
-.'
+Category : ' . $preference1_data->category_name . '' . $book_preference2 . ' ' . $book_preference2 . '
 
 Best Wishes,
 
@@ -271,8 +257,7 @@ FOSSEE, IIT Bombay', array(
           ))
         );
       } //$proposal_data->proposal_type != 1
-      else
-      {
+      else {
         //Non AICTE book proposal dissaprove//
         $message['body'] = array(
           'body' => t('
@@ -330,12 +315,10 @@ FOSSEE, IIT Bombay', array(
       $result = $query->execute();
       $proposal_data = $result->fetchObject();
       $samplecodefilename = "";
-      if (strlen($proposal_data->samplefilepath) >= 5)
-      {
+      if (strlen($proposal_data->samplefilepath) >= 5) {
         $samplecodefilename = substr($proposal_data->samplefilepath, strrpos($proposal_data->samplefilepath, '/') + 1);
       } //strlen($proposal_data->samplefilepath) >= 5
-      else
-      {
+      else {
         $samplecodefilename = "Not provided";
       }
       $query = "
@@ -647,8 +630,8 @@ FOSSEE, IIT Bombay', array(
       );
       break;
     /**
-      *Adding mail details for editing book details
-      */
+     *Adding mail details for editing book details
+     */
     case 'book_edit':
       $query = db_select('textbook_companion_proposal');
       $query->fields('textbook_companion_proposal');
@@ -698,65 +681,64 @@ FOSSEE, IIT Bombay', array(
         ))
       );
       break;
-      /**
-        *Adding mail details for status update book details
-        */
-      case 'book_status_updated':
-        $query = db_select('textbook_companion_preference');
-        $query->fields('textbook_companion_preference');
-        $query->condition('id', $params['book_status_updated']['preference_id']);
-        $result = $query->execute();
-        $preference_data = $result->fetchObject();
-        $book_status = '';
-        switch ($preference_data->book_status)
-        {
-          case 0:
-            $book_status = 'In Progress';
-            break;
-          case 1:
-            $book_status = 'Under Review';
-            break;
-          case 2:
-            $book_status = 'Approved';
-            break;
-          case 3:
-            $book_status = 'Completed';
-            break;
-          case 4:
-            $book_status = 'Disabled';
-            break;
-          default:
-            $book_status = 'Unknown';
-            break;
-        }
-        $user_data = user_load($params['book_status_updated']['user_id']);
-        $message['headers'] = $params['book_status_updated']['headers'];
-        $message['subject'] = t('[!site_name] Your book status has been changed.', array(
-          '!site_name' => variable_get('site_name', '')
-        ), array(
-          'language' => $language->language
-        ));
-        $message['body'] = array(
-          'body' => t('
+    /**
+     *Adding mail details for status update book details
+     */
+    case 'book_status_updated':
+      $query = db_select('textbook_companion_preference');
+      $query->fields('textbook_companion_preference');
+      $query->condition('id', $params['book_status_updated']['preference_id']);
+      $result = $query->execute();
+      $preference_data = $result->fetchObject();
+      $book_status = '';
+      switch ($preference_data->book_status) {
+        case 0:
+          $book_status = 'In Progress';
+          break;
+        case 1:
+          $book_status = 'Under Review';
+          break;
+        case 2:
+          $book_status = 'Approved';
+          break;
+        case 3:
+          $book_status = 'Completed';
+          break;
+        case 4:
+          $book_status = 'Disabled';
+          break;
+        default:
+          $book_status = 'Unknown';
+          break;
+      }
+      $user_data = user_load($params['book_status_updated']['user_id']);
+      $message['headers'] = $params['book_status_updated']['headers'];
+      $message['subject'] = t('[!site_name] Your book status has been changed.', array(
+        '!site_name' => variable_get('site_name', '')
+      ), array(
+        'language' => $language->language
+      ));
+      $message['body'] = array(
+        'body' => t('
     Dear !user_name,
 
     Your following book status has been updated:
 
     Title of the book : ' . $preference_data->book . '
     Author name : ' . $preference_data->author . '
-    Status :'. $book_status.'
+    Status :' . $book_status . '
 
     Regards,
 
     Scilab TBC Team,
     FOSSEE, IIT Bombay', array(
-            '!site_name' => variable_get('site_name', ''),
-            '!user_name' => $user_data->name
-          ), array(
-            'language' => $language->language
-          ))
-        );
-        break;
+          '!site_name' => variable_get('site_name', ''),
+          '!user_name' => $user_data->name
+        ), array(
+          'language' => $language->language
+        ))
+      );
+      break;
     case 'example_uploaded':
       // bcc to textbook_companion_emails
       //$message['headers'] += $tbc_bcc_emails;
@@ -1033,8 +1015,8 @@ FOSSEE, IIT Bombay', array(
       );
       break;
     /**
-      *Mail content for locking book
-      */
+     *Mail content for locking book
+     */
     case 'all_example_submitted':
       $query = db_select('textbook_companion_preference');
       $query->fields('textbook_companion_preference');
@@ -1169,8 +1151,8 @@ Dear !user_name,
 Your following chapter has been deleted by you :
 
 Title of the Book : ' . $params['chapter_deleted_user']['book_title'] . '
-Chapetr Number:' . $params['chapter_deleted_user']['chapter_number'].'
-Title of the Chapter : ' . $params['chapter_deleted_user']['chapter_title'] .'
+Chapetr Number:' . $params['chapter_deleted_user']['chapter_number'] . '
+Title of the Chapter : ' . $params['chapter_deleted_user']['chapter_title'] . '
 
 Best Wishes,
 

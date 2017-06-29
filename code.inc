@@ -78,9 +78,8 @@ function upload_examples_form($form, &$form_state) {
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -174,7 +173,7 @@ $(document).ready(function(){
    *Existing chapters saved in $options
    */
   $options = array(
-    '' => 'select',
+    '' => 'select'
   );
   /**
    *'New Chpater' option for entering new chapter
@@ -187,7 +186,7 @@ $(document).ready(function(){
   $query->fields('textbook_companion_chapter');
   $query->condition('preference_id', $preference_data->id);
   $chapter_result = $query->execute();
-  while($data = $chapter_result->fetchObject()){
+  while ($data = $chapter_result->fetchObject()) {
     $options[$data->number] = $data->number;
     $chapter_description[$data->number] = $data->name;
   }
@@ -202,12 +201,12 @@ $(document).ready(function(){
     '#options' => $options,
     '#ajax' => array(
       'callback' => 'display_chapter_name_callback',
-      'wrapper' => 'display-chapter-name-wrapper',
-     ),
+      'wrapper' => 'display-chapter-name-wrapper'
+    ),
 
     '#multiple' => FALSE,
     '#size' => 1,
-    '#required' => TRUE,
+    '#required' => TRUE
   );
   $form['chapter_not_exist'] = array(
     '#type' => 'textfield',
@@ -230,11 +229,12 @@ $(document).ready(function(){
     '#maxlength' => 255,
     '#required' => TRUE,
     '#prefix' => '<div id = "display-chapter-name-wrapper">',
-    '#suffix' => '</div>',
+    '#suffix' => '</div>'
   );
-  if(isset($form_state['values']['number'])) {
-    if($form_state['values']['number'] != "0") {
+  if (isset($form_state['values']['number'])) {
+    if ($form_state['values']['number'] != "0") {
       $form['name']['#value'] = $chapter_description[$form_state['values']['number']];
+      $form['name']['#disabled'] = TRUE;
       $form['name']['#description'] = t("<div style='color:red'><strong>Note:</strong> Chapter name will be according to existing chapter no. seleted.</div>");
     }
   }
@@ -354,7 +354,7 @@ $(document).ready(function(){
   );
   $form['preference_id'] = array(
     '#type' => 'hidden',
-    '#value' => $preference_data->id,
+    '#value' => $preference_data->id
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -370,16 +370,15 @@ $(document).ready(function(){
  *upload exanple form validation
  */
 function upload_examples_form_validate($form, &$form_state) {
-  if($form_state['values']['number'] == '0') {
-    if(!is_numeric($form_state['values']['chapter_not_exist']))
+  if ($form_state['values']['number'] == '0') {
+    if (!is_numeric($form_state['values']['chapter_not_exist']))
       form_set_error('chapter_not_exist', t('Chapter No. can contains only numbers.'));
     if (!check_name($form_state['values']['name']))
       form_set_error('name', t('Title of the Chapter can contain only alphabets, numbers and spaces.'));
-    if(check_chapter_exist($form_state['values']['chapter_not_exist'], $form_state['values']['preference_id']))
+    if (check_chapter_exist($form_state['values']['chapter_not_exist'], $form_state['values']['preference_id']))
       form_set_error('chapter_not_exist', t('Chapter Exist. Plese enter new chapter.'));
-  }
-  else {
-    if(!check_chapter_name($form_state['values']['number'], $form_state['values']['name'], $form_state['values']['preference_id']))
+  } else {
+    if (!check_chapter_name($form_state['values']['number'], $form_state['values']['name'], $form_state['values']['preference_id']))
       form_set_error('name', 'Chapter name can not be changed. You can change chapter name in section.');
   }
   if (!check_name($form_state['values']['example_caption']))
@@ -540,9 +539,8 @@ function upload_examples_form_submit($form, &$form_state) {
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -593,14 +591,13 @@ function upload_examples_form_submit($form, &$form_state) {
     );
     $chapter_id = db_last_insert_id('textbook_companion_chapter', 'id'); */
     $query = "INSERT INTO {textbook_companion_chapter} (preference_id, number, name) VALUES(:preference_id, :number, :name)";
-    if($form_state['values']['number']) {
+    if ($form_state['values']['number']) {
       $args = array(
         ":preference_id" => $preference_id,
         ":number" => $form_state['values']['number'],
         ":name" => $form_state['values']['name']
       );
-    }
-    else {
+    } else {
       $args = array(
         ":preference_id" => $preference_id,
         ":number" => $form_state['values']['chapter_not_exist'],
@@ -647,7 +644,7 @@ function upload_examples_form_submit($form, &$form_state) {
     }
   } //$cur_example_d = $cur_example_q->fetchObject()
   /* creating directories */
-  if($form_state['values']['number'])
+  if ($form_state['values']['number'])
     $dest_path .= 'CH' . $form_state['values']['number'] . '/';
   else
     $dest_path .= 'CH' . $form_state['values']['chapter_not_exist'] . '/';
@@ -926,9 +923,8 @@ function _upload_examples_delete() {
   } //!$proposal_data
   /* deleting example files */
   if (delete_example($example_data->id)) {
-    drupal_set_message('Example deleted.', 'status');-
-    /* sending email */
-    $email_to = $user->mail;
+    drupal_set_message('Example deleted.', 'status');
+    - /* sending email */ $email_to = $user->mail;
     $from = variable_get('textbook_companion_from_email', '');
     $bcc = variable_get('textbook_companion_emails', '');
     $cc = variable_get('textbook_companion_cc_emails', '');
@@ -987,8 +983,7 @@ function _list_of_book_dependency_files($book_id) {
   $book_dependency_files_q = $query->execute();
   while ($book_dependency_files_data = $book_dependency_files_q->fetchObject()) {
     $temp_caption = '';
-    if ($book_dependency_files_data->caption)
-    {
+    if ($book_dependency_files_data->caption) {
       $book_dependency_files[$book_dependency_files_data->id] = l($book_dependency_files_data->filename, 'download/dependency/' . $book_dependency_files_data->id, array(
         'attributes' => array(
           'class' => 'title'
@@ -1014,8 +1009,8 @@ function check_chapter_exist($number, $preference_id) {
   $query->condition('preference_id', $preference_id);
   $query->condition('number', $number);
   $chapter_result = $query->execute();
-  if($data = $chapter_result->fetchObject()){
-    if($number == $data->number)
+  if ($data = $chapter_result->fetchObject()) {
+    if ($number == $data->number)
       return TRUE;
   }
   return FALSE;
@@ -1029,9 +1024,8 @@ function check_chapter_name($number, $name, $preference_id) {
   $query->condition('preference_id', $preference_id);
   $query->condition('number', $number);
   $chapter_result = $query->execute();
-  if($data = $chapter_result->fetchObject())
-  {
-    if($name == $data->name)
+  if ($data = $chapter_result->fetchObject()) {
+    if ($name == $data->name)
       return TRUE;
   }
   return FALSE;

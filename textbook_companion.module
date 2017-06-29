@@ -68,121 +68,118 @@ function textbook_companion_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'proposal.inc'
   );
-  /* for reviewers */
-/*Changed 'Manage Book Proposals' to 'Manger TBC Proposals*/
-$items['manage_proposal'] = array(
-  'title' => 'Manage TBC Proposals',
-  'description' => 'Manage TBC Proposals',
-  'page callback' => '_proposal_pending',
-  'access callback' => 'user_access',
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/pending'] = array(
-  'title' => 'Pending Proposals',
-  'description' => 'Pending Proposals Queue',
-  'page callback' => '_proposal_pending',
-  'access callback' => 'user_access',
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_DEFAULT_LOCAL_TASK,
-  'weight' => 1,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/all'] = array(
-  'title' => 'All Proposals',
-  'description' => 'All Proposals',
-  'page callback' => '_proposal_all',
-  'access callback' => 'user_access',
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_LOCAL_TASK,
-  'weight' => 2,
-  'file' => 'manage_proposal.inc'
-);
-/*What should ne the category?*/
-$items['manage_proposal/category'] = array(
-  'title' => 'Categorize',
-  'description' => 'Categorize Books',
-  'page callback' => '_category_all',
-  'access callback' => 'user_access',
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_LOCAL_TASK,
-  'weight' => 2,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/failed'] = array(
-  'title' => 'Failed Proposals',
-  'description' => 'Failed to submit code',
-  'page callback' => '_failed_all',
-  'access callback' => 'user_access',
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_LOCAL_TASK,
-  'weight' => 3,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/approve'] = array(
-  'title' => 'Proposal Approval',
-  'description' => 'Proposal Approval',
-  'page callback' => 'drupal_get_form',
-  'page arguments' => array(
-    'proposal_approval_form'
-  ),
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_CALLBACK,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/status'] = array(
-  'title' => 'Proposal Status',
-  'description' => 'Proposal Status',
-  'page callback' => 'drupal_get_form',
-  'page arguments' => array(
-    'proposal_status_form'
-  ),
-  'access arguments' => array(
-    'approve book proposal'
-  ),
-  'type' => MENU_CALLBACK,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/edit'] = array(
-  'title' => 'Edit Proposal',
-  'description' => 'Edit Proposal',
-  'page callback' => 'drupal_get_form',
-  'page arguments' => array(
-    'proposal_edit_form'
-  ),
-  'access arguments' => array(
-    'edit book proposal'
-  ),
-  'type' => MENU_CALLBACK,
-  'file' => 'manage_proposal.inc'
-);
-$items['manage_proposal/category/edit'] = array(
-  'title' => 'Edit Category',
-  'description' => 'Edit category',
-  'page callback' => 'drupal_get_form',
-  'page arguments' => array(
-    'category_edit_form'
-  ),
-  'access arguments' => array(
-    'edit book proposal'
-  ),
-  'type' => MENU_CALLBACK,
-  'file' => 'manage_proposal.inc'
-);
-
-/***************************MANAGE BOOKS*********************************************/
+/******************************Manger TBC Proposals****************************/
+  $items['manage_proposal'] = array(
+    'title' => 'Manage TBC Proposals',
+    'description' => 'Manage TBC Proposals',
+    'page callback' => '_proposal_pending',
+    'access callback' => 'user_access',
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/pending'] = array(
+    'title' => 'Pending Proposals',
+    'description' => 'Pending Proposals Queue',
+    'page callback' => '_proposal_pending',
+    'access callback' => 'user_access',
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 1,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/all'] = array(
+    'title' => 'All Proposals',
+    'description' => 'All Proposals',
+    'page callback' => '_proposal_all',
+    'access callback' => 'user_access',
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/category'] = array(
+    'title' => 'Categorize',
+    'description' => 'Categorize Books',
+    'page callback' => '_category_all',
+    'access callback' => 'user_access',
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/failed'] = array(
+    'title' => 'Failed Proposals',
+    'description' => 'Failed to submit code',
+    'page callback' => '_failed_all',
+    'access callback' => 'user_access',
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/approve'] = array(
+    'title' => 'Proposal Approval',
+    'description' => 'Proposal Approval',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'proposal_approval_form'
+    ),
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_CALLBACK,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/status'] = array(
+    'title' => 'Proposal Status',
+    'description' => 'Proposal Status',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'proposal_status_form'
+    ),
+    'access arguments' => array(
+      'approve book proposal'
+    ),
+    'type' => MENU_CALLBACK,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/edit'] = array(
+    'title' => 'Edit Proposal',
+    'description' => 'Edit Proposal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'proposal_edit_form'
+    ),
+    'access arguments' => array(
+      'edit book proposal'
+    ),
+    'type' => MENU_CALLBACK,
+    'file' => 'manage_proposal.inc'
+  );
+  $items['manage_proposal/category/edit'] = array(
+    'title' => 'Edit Category',
+    'description' => 'Edit category',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'category_edit_form'
+    ),
+    'access arguments' => array(
+      'edit book proposal'
+    ),
+    'type' => MENU_CALLBACK,
+    'file' => 'manage_proposal.inc'
+  );
+/***************************MANAGE BOOKS***************************************/
   $items['manage_books'] = array(
     'title' => 'Manage Book',
     'description' => 'Manage Book',
@@ -262,7 +259,7 @@ $items['manage_proposal/category/edit'] = array(
       'book_status_form'
     ),
     'access arguments' => array(
-       'book proposal'
+       'book proposal status'
     ),
     'type' => MENU_CALLBACK,
     'file' => 'manage_book.inc'
@@ -280,7 +277,6 @@ $items['manage_proposal/category/edit'] = array(
     'type' => MENU_CALLBACK,
     'file' => 'manage_book.inc'
   );
-/******************************END OF MANAGE BOOKS***********************************/
   $items['code_approval'] = array(
     'title' => 'Manage Code Approval',
     'description' => 'Manage Code Approval',
@@ -700,7 +696,16 @@ $items['manage_proposal/category/edit'] = array(
     'type' => MENU_NORMAL_ITEM,
     'file' => 'manage_proposal.inc'
   );
-  /*Cheque Details and Contact Form */
+  //Cheque Details and Contact Form
+  $items['cheque_manage/user'] = array(
+    'title' => 'Cheque Proposals',
+    'description' => 'Cheque Proposals',
+    'page callback' => 'cheque_proposal_user',
+    'access arguments' => array(
+      'cheque proposal user'
+    ),
+    'file' => 'cheque_manage.inc'
+  );
   $items['cheque_manage/all'] = array(
     'title' => 'Cheque Proposals',
     'description' => 'Cheque Proposals',
@@ -828,7 +833,6 @@ $items['manage_proposal/category/edit'] = array(
     'type' => MENU_LOCAL_TASK,
     'file' => 'pdf/generate_pdf.inc'
   );
-  /*******************/
   $items['manage_proposal/paper_submission'] = array(
     'title' => 'Application Submission',
     'description' => 'Application Submission',
@@ -893,6 +897,10 @@ function textbook_companion_permission() {
       "title" => t("Bulk delete code"),
       "description" => t("Allows users to delete bulk code.")
     ),
+    "book proposal status" => array(
+      "title" => t("Book proposal status"),
+      "description" => t("Book proposal status.")
+    ),
     "edit book proposal" => array(
       "title" => t("Edit book proposal"),
       "description" => t("Allows users to edit book proposal.")
@@ -945,6 +953,10 @@ function textbook_companion_permission() {
       "title" => t("Cheque proposal"),
       "description" => t("Cheque proposal.")
     ),
+    "cheque proposal user" => array(
+      "title" => t("Cheque proposal User"),
+      "description" => t("Cheque proposal user.")
+    ),
     "download books to review" => array(
       "title" => t("download books to review"),
       "description" => t("Download books to review.")
@@ -952,6 +964,9 @@ function textbook_companion_permission() {
   );
 }
 
+/**
+ *function for deleting pdf of book
+ */
 function del_book_pdf($book_id) {
   $root_path = textbook_companion_path();
   $dir_path = $root_path . "latex/";
@@ -959,6 +974,9 @@ function del_book_pdf($book_id) {
   if (file_exists($dir_path . $pdf_filename))
     unlink($dir_path . $pdf_filename);
 }
+/**
+ *function for list of states
+ */
 function _tbc_list_of_states() {
   $states = array(
     0 => '-Select-'
@@ -972,6 +990,9 @@ function _tbc_list_of_states() {
   } //$states_list_data = $states_list->fetchObject()
   return $states;
 }
+/**
+ *function for list of cities
+ */
 function _tbc_list_of_cities() {
   $city = array(
     0 => '-Select-'
@@ -985,6 +1006,9 @@ function _tbc_list_of_cities() {
   } //$city_list_data = $city_list->fetchObject()
   return $city;
 }
+/**
+ *function for list of departments
+ */
 function _tbc_list_of_departments() {
   $query = db_select('list_of_departments');
   $query->fields('list_of_departments');
@@ -995,6 +1019,9 @@ function _tbc_list_of_departments() {
   } //$department_list_data = $department_list->fetchObject()
   return $department;
 }
+/**
+ *function for list of categories
+ */
 function _tbc_list_of_category($category_id = NULL) {
   if ($category_id == NULL) {
     $query = db_select('list_of_category');
@@ -1026,7 +1053,9 @@ function _tbc_sentence_case($string) {
   } //array( '-', '\'' ) as $delimiter
   return $string;
 }
-/*************************** VALIDATION FUNCTIONS *****************************/
+/**
+ *VALIDATION FUNCTIONS
+ */
 function textbook_companion_check_valid_filename($file_name) {
   if (!preg_match('/^[0-9a-zA-Z\_\.]+$/', $file_name))
     return FALSE;
@@ -1053,7 +1082,9 @@ function textbook_companion_path() {
 function textbook_companion_samplecode_path() {
   return $_SERVER['DOCUMENT_ROOT'] . base_path() . 'tbc_sample_code/';
 }
-/****************************** DELETION FUNCTIONS ****************************/
+/**
+ *DELETION FUNCTIONS
+ */
 function delete_example($example_id) {
   global $user;
   $root_path = textbook_companion_path();

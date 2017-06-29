@@ -3,10 +3,9 @@
 /******************************************************************************/
 /***************************** EDIT EXAMPLE ***********************************/
 /******************************************************************************/
-function upload_examples_admin_edit_form($form, $form_state)
-{
+function upload_examples_admin_edit_form($form, $form_state) {
   global $user;
-  if($form_state['values']['example_id'])
+  if ($form_state['values']['example_id'])
     $example_id = $form_state['values']['example_id'];
   else
     $example_id = arg(2);
@@ -23,8 +22,7 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->range(0, 1);
   $example_q = $query->execute();
   $example_data = $example_q->fetchObject();
-  if (!$example_q)
-  {
+  if (!$example_q) {
     drupal_set_message(t("Invalid example selected."), 'error');
     drupal_goto('');
     return;
@@ -45,35 +43,27 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->fields('textbook_companion_example_files');
   $query->condition('example_id', $example_id);
   $example_files_q = $query->execute();
-  while ($example_files_data = $example_files_q->fetchObject())
-  {
-    if ($example_files_data->filetype == "S")
-    {
+  while ($example_files_data = $example_files_q->fetchObject()) {
+    if ($example_files_data->filetype == "S") {
       $source_file = l($example_files_data->filename, 'download/file/' . $example_files_data->id);
       $source_file_id = $example_files_data->id;
     } //$example_files_data->filetype == "S"
-    if ($example_files_data->filetype == "R")
-    {
-      if (strlen($result1_file) == 0)
-      {
+    if ($example_files_data->filetype == "R") {
+      if (strlen($result1_file) == 0) {
         $result1_file = l($example_files_data->filename, 'download/file/' . $example_files_data->id);
         $result1_file_id = $example_files_data->id;
       } //strlen($result1_file) == 0
-      else
-      {
+      else {
         $result2_file = l($example_files_data->filename, 'download/file/' . $example_files_data->id);
         $result2_file_id = $example_files_data->id;
       }
     } //$example_files_data->filetype == "R"
-    if ($example_files_data->filetype == "X")
-    {
-      if (strlen($xcos1_file) <= 0)
-      {
+    if ($example_files_data->filetype == "X") {
+      if (strlen($xcos1_file) <= 0) {
         $xcos1_file = l($example_files_data->filename, 'download/file/' . $example_files_data->id);
         $xcos1_file_id = $example_files_data->id;
       } //strlen($xcos1_file) <= 0
-      else
-      {
+      else {
         $xcos2_file = l($example_files_data->filename, 'download/file/' . $example_files_data->id);
         $xcos2_file_id = $example_files_data->id;
       }
@@ -87,8 +77,7 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->condition('id', $example_data->chapter_id);
   $result = $query->execute();
   $chapter_data = $result->fetchObject();
-  if (!$chapter_data)
-  {
+  if (!$chapter_data) {
     drupal_set_message(t("Invalid chapter selected."), 'error');
     drupal_goto('');
     return;
@@ -101,8 +90,7 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->condition('id', $chapter_data->preference_id);
   $result = $query->execute();
   $preference_data = $result->fetchObject();
-  if (!$preference_data)
-  {
+  if (!$preference_data) {
     drupal_set_message(t("Invalid book selected."), 'error');
     drupal_goto('');
     return;
@@ -115,8 +103,7 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->condition('id', $preference_data->proposal_id);
   $result = $query->execute();
   $proposal_data = $result->fetchObject();
-  if (!$proposal_data)
-  {
+  if (!$proposal_data) {
     drupal_set_message(t("Invalid proposal selected."), 'error');
     drupal_goto('');
     return;
@@ -197,8 +184,7 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#collapsible' => FALSE,
     '#collapsed' => FALSE
   );
-  if ($source_file)
-  {
+  if ($source_file) {
     $form['sourcefile']['cur_source'] = array(
       '#type' => 'item',
       '#title' => t('Existing Main or Source File'),
@@ -220,8 +206,7 @@ function upload_examples_admin_edit_form($form, $form_state)
       '#value' => $source_file_id
     );
   } //$source_file
-  else
-  {
+  else {
     $form['sourcefile']['sourcefile1'] = array(
       '#type' => 'file',
       '#title' => t('Upload New Main or Source File'),
@@ -240,8 +225,7 @@ function upload_examples_admin_edit_form($form, $form_state)
   $query->fields('textbook_companion_example_dependency');
   $query->condition('example_id', $example_data->id);
   $dependency_q = $query->execute();
-  while ($dependency_data = $dependency_q->fetchObject())
-  {
+  while ($dependency_data = $dependency_q->fetchObject()) {
     $dependency_files[] = $dependency_data->dependency_id;
   } //$dependency_data = $dependency_q->fetchObject()
   /* existing dependencies */
@@ -282,33 +266,31 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#options' => completed_book(),
     '#ajax' => array(
       'callback' => 'ajax_checkboxes_callback',
-      'wrapper' => 'checkboxes-div',
-     ),
-    '#multiple' => FALSE,
+      'wrapper' => 'checkboxes-div'
+    ),
+    '#multiple' => FALSE
   );
   $form['existing_depfile']['checkboxes_fieldset'] = array(
     '#prefix' => '<div id="checkboxes-div">',
     '#suffix' => '</div>',
     '#type' => 'checkboxes',
-    '#title' => 'Dependency files for selected book.',
+    '#title' => 'Dependency files for selected book.'
   );
 
-  if(isset($form_state['values']['existing_depfile']['dep_chapter_example_files']))
-  {
+  if (isset($form_state['values']['existing_depfile']['dep_chapter_example_files'])) {
     $val = $form_state['values']['existing_depfile']['dep_chapter_example_files'];
-    if($val != 0)
-    {
-      $query = db_query('SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = (:preference_id)', array(':preference_id' => $val));
+    if ($val != 0) {
+      $query = db_query('SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = (:preference_id)', array(
+        ':preference_id' => $val
+      ));
       $option_list = array();
       $row = $query->rowCount();
-      if ($row == 0)
-      {
+      if ($row == 0) {
         $form['existing_depfile']['checkboxes_fieldset']['empty'] = array(
           '#type' => 'item',
           '#markup' => 'This lab has no dependency files.'
         );
-      }
-      else {
+      } else {
         $dependency_options_list = array();
         while ($curr_val = $query->fetchObject()) {
           // $form['checkboxes_fieldset']["checkbox$cnt"] = array(
@@ -333,8 +315,7 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#collapsible' => FALSE,
     '#collapsed' => FALSE
   );
-  if ($result1_file)
-  {
+  if ($result1_file) {
     $form['result']['cur_result1'] = array(
       '#type' => 'item',
       '#title' => t('Existing Result File 1'),
@@ -356,8 +337,7 @@ function upload_examples_admin_edit_form($form, $form_state)
       '#value' => $result1_file_id
     );
   } //$result1_file
-  else
-  {
+  else {
     $form['result']['result1'] = array(
       '#type' => 'file',
       '#title' => t('Upload New Result File 1'),
@@ -369,8 +349,7 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#type' => 'item',
     '#markup' => "<br />"
   );
-  if ($result2_file)
-  {
+  if ($result2_file) {
     $form['result']['cur_result2'] = array(
       '#type' => 'item',
       '#title' => t('Existing Result File 2'),
@@ -392,8 +371,7 @@ function upload_examples_admin_edit_form($form, $form_state)
       '#value' => $result2_file_id
     );
   } //$result2_file
-  else
-  {
+  else {
     $form['result']['result2'] = array(
       '#type' => 'file',
       '#title' => t('Upload New Result file 2'),
@@ -407,8 +385,7 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#collapsible' => FALSE,
     '#collapsed' => FALSE
   );
-  if ($xcos1_file)
-  {
+  if ($xcos1_file) {
     $form['xcos']['cur_xcos1'] = array(
       '#type' => 'item',
       '#title' => t('Existing xcos File 1'),
@@ -430,8 +407,7 @@ function upload_examples_admin_edit_form($form, $form_state)
       '#value' => $xcos1_file_id
     );
   } //$xcos1_file
-  else
-  {
+  else {
     $form['xcos']['xcos1'] = array(
       '#type' => 'file',
       '#title' => t('Upload New xcos file 1'),
@@ -443,8 +419,7 @@ function upload_examples_admin_edit_form($form, $form_state)
     '#type' => 'item',
     '#markup' => "<br />"
   );
-  if ($xcos2_file)
-  {
+  if ($xcos2_file) {
     $form['xcos']['cur_xcos2'] = array(
       '#type' => 'item',
       '#title' => t('Existing xcos File 2'),
@@ -466,8 +441,7 @@ function upload_examples_admin_edit_form($form, $form_state)
       '#value' => $xcos2_file_id
     );
   } //$xcos2_file
-  else
-  {
+  else {
     $form['xcos']['xcos2'] = array(
       '#type' => 'file',
       '#title' => t('Upload New xcos file 2'),
@@ -485,17 +459,13 @@ function upload_examples_admin_edit_form($form, $form_state)
   );
   return $form;
 }
-function upload_examples_admin_edit_form_validate($form, &$form_state)
-{
+function upload_examples_admin_edit_form_validate($form, &$form_state) {
   if (!check_name($form_state['values']['example_caption']))
     form_set_error('example_caption', t('Example Caption can contain only alphabets, numbers and spaces.'));
-  if (isset($_FILES['files']))
-  {
+  if (isset($_FILES['files'])) {
     /* check for valid filename extensions */
-    foreach ($_FILES['files']['name'] as $file_form_name => $file_name)
-    {
-      if ($file_name)
-      {
+    foreach ($_FILES['files']['name'] as $file_form_name => $file_name) {
+      if ($file_name) {
         /* checking file type */
         if (strstr($file_form_name, 'source'))
           $file_type = 'S';
@@ -506,8 +476,7 @@ function upload_examples_admin_edit_form_validate($form, &$form_state)
         else
           $file_type = 'U';
         $allowed_extensions_str = '';
-        switch ($file_type)
-        {
+        switch ($file_type) {
           case 'S':
             $allowed_extensions_str = variable_get('textbook_companion_source_extensions', '');
             break;
@@ -568,8 +537,7 @@ function upload_examples_admin_edit_form_validate($form, &$form_state)
   });";
   drupal_add_js($chapter_name_js, 'inline', 'header');
 }
-function upload_examples_admin_edit_form_submit($form, &$form_state)
-{
+function upload_examples_admin_edit_form_submit($form, &$form_state) {
   global $user;
   $example_id = arg(2);
   /* get example details */
@@ -581,8 +549,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   $query->range(0, 1);
   $example_q = $query->execute();
   $example_data = $example_q->fetchObject();
-  if (!$example_q)
-  {
+  if (!$example_q) {
     drupal_set_message(t("Invalid example selected."), 'error');
     drupal_goto('');
     return;
@@ -595,8 +562,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   $query->condition('id', $example_data->chapter_id);
   $chapter_q = $query->execute();
   $chapter_data = $chapter_q->fetchObject();
-  if (!$chapter_data)
-  {
+  if (!$chapter_data) {
     drupal_set_message(t("Invalid chapter selected."), 'error');
     drupal_goto('');
     return;
@@ -609,8 +575,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   $query->condition('id', $chapter_data->preference_id);
   $result = $query->execute();
   $preference_data = $result->fetchObject();
-  if (!$preference_data)
-  {
+  if (!$preference_data) {
     drupal_set_message(t("Invalid book selected."), 'error');
     drupal_goto('');
     return;
@@ -623,8 +588,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   $query->condition('id', $preference_data->proposal_id);
   $result = $query->execute();
   $proposal_data = $result->fetchObject();
-  if (!$proposal_data)
-  {
+  if (!$proposal_data) {
     drupal_set_message(t("Invalid proposal selected."), 'error');
     drupal_goto('');
     return;
@@ -682,12 +646,9 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   //$query = db_delete('textbook_companion_example_dependency');
   //$query->condition('example_id', $example_data->id);
   //$num_deleted = $query->execute();
-  if ($form_state['values']['existing_depfile']['dep_chapter_example_files'] != "0")
-  {
-    foreach ($form_state['values']['existing_depfile']['checkboxes_fieldset'] as $row)
-    {
-      if ($row > 0)
-      {
+  if ($form_state['values']['existing_depfile']['dep_chapter_example_files'] != "0") {
+    foreach ($form_state['values']['existing_depfile']['checkboxes_fieldset'] as $row) {
+      if ($row > 0) {
         $query = "INSERT INTO {textbook_companion_example_dependency} (example_id, dependency_id, approval_status, timestamp)
           VALUES (:example_id, :dependency_id, :approval_status, :timestamp)";
         $args = array(
@@ -706,8 +667,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
   }
   /* handle source file */
   $cur_file_id = $form_state['values']['cur_source_file_id'];
-  if ($cur_file_id > 0)
-  {
+  if ($cur_file_id > 0) {
     /*$file_q = db_query("SELECT * FROM  {textbook_companion_example_files} WHERE id = %d AND example_id = %d", $cur_file_id, $example_data->id);
     $file_data = db_fetch_object($file_q);*/
     $query = db_select('textbook_companion_example_files');
@@ -716,40 +676,32 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
     $query->condition('example_id', $example_data->id);
     $result = $query->execute();
     $file_data = $result->fetchObject();
-    if (!$file_data)
-    {
+    if (!$file_data) {
       drupal_set_message("Error deleting example source file. File not present in database.", 'error');
       return;
     } //!$file_data
-    if (($form_state['values']['cur_source_checkbox'] == 1) && (!$_FILES['files']['name']['sourcefile1']))
-    {
-      if (!delete_file($cur_file_id))
-      {
+    if (($form_state['values']['cur_source_checkbox'] == 1) && (!$_FILES['files']['name']['sourcefile1'])) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error deleting example source file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //($form_state['values']['cur_source_checkbox'] == 1) && (!$_FILES['files']['name']['sourcefile1'])
   } //$cur_file_id > 0
-  if ($_FILES['files']['name']['sourcefile1'])
-  {
-    if ($cur_file_id > 0)
-    {
-      if (!delete_file($cur_file_id))
-      {
+  if ($_FILES['files']['name']['sourcefile1']) {
+    if ($cur_file_id > 0) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error removing previous example source file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //$cur_file_id > 0
-    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['sourcefile1']))
-    {
+    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['sourcefile1'])) {
       drupal_set_message(t("Error uploading source file. File !filename already exists.", array(
         '!filename' => $_FILES['files']['name']['sourcefile1']
       )), 'error');
       return;
     } //file_exists($root_path . $dest_path . $_FILES['files']['name']['sourcefile1'])
     /* uploading file */
-    if (move_uploaded_file($_FILES['files']['tmp_name']['sourcefile1'], $root_path . $dest_path . $_FILES['files']['name']['sourcefile1']))
-    {
+    if (move_uploaded_file($_FILES['files']['tmp_name']['sourcefile1'], $root_path . $dest_path . $_FILES['files']['name']['sourcefile1'])) {
       /* for uploaded files making an entry in the database */
       /*db_query("INSERT INTO {textbook_companion_example_files} (example_id, filename, filepath, filemime, filesize, filetype, timestamp)
       VALUES (%d, '%s', '%s', '%s', %d, '%s', %d)",
@@ -777,15 +729,13 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
       ));
       drupal_set_message($_FILES['files']['name']['sourcefile1'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['sourcefile1'], $root_path . $dest_path . $_FILES['files']['name']['sourcefile1'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['sourcefile1'], 'error');
     }
   } //$_FILES['files']['name']['sourcefile1']
   /* handle result1 file */
   $cur_file_id = $form_state['values']['cur_result1_file_id'];
-  if ($cur_file_id > 0)
-  {
+  if ($cur_file_id > 0) {
     /*$file_q = db_query("SELECT * FROM  {textbook_companion_example_files} WHERE id = %d AND example_id = %d", $cur_file_id, $example_data->id);
     $file_data = db_fetch_object($file_q);*/
     $query = db_select('textbook_companion_example_files');
@@ -794,40 +744,32 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
     $query->condition('example_id', $example_data->id);
     $result = $query->execute();
     $file_data = $result->fetchObject();
-    if (!$file_data)
-    {
+    if (!$file_data) {
       drupal_set_message("Error deleting example result 1 file. File not present in database.", 'error');
       return;
     } //!$file_data
-    if (($form_state['values']['cur_result1_checkbox'] == 1) && (!$_FILES['files']['name']['result1']))
-    {
-      if (!delete_file($cur_file_id))
-      {
+    if (($form_state['values']['cur_result1_checkbox'] == 1) && (!$_FILES['files']['name']['result1'])) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error deleting example result 1 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //($form_state['values']['cur_result1_checkbox'] == 1) && (!$_FILES['files']['name']['result1'])
   } //$cur_file_id > 0
-  if ($_FILES['files']['name']['result1'])
-  {
-    if ($cur_file_id > 0)
-    {
-      if (!delete_file($cur_file_id))
-      {
+  if ($_FILES['files']['name']['result1']) {
+    if ($cur_file_id > 0) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error removing previous example result 1 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //$cur_file_id > 0
-    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['result1']))
-    {
+    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['result1'])) {
       drupal_set_message(t("Error uploading result 1 file. File !filename already exists.", array(
         '!filename' => $_FILES['files']['name']['result1']
       )), 'error');
       return;
     } //file_exists($root_path . $dest_path . $_FILES['files']['name']['result1'])
     /* uploading file */
-    if (move_uploaded_file($_FILES['files']['tmp_name']['result1'], $root_path . $dest_path . $_FILES['files']['name']['result1']))
-    {
+    if (move_uploaded_file($_FILES['files']['tmp_name']['result1'], $root_path . $dest_path . $_FILES['files']['name']['result1'])) {
       /* for uploaded files making an entry in the database */
       /* db_query("INSERT INTO {textbook_companion_example_files} (example_id, filename, filepath, filemime, filesize, filetype, timestamp)
       VALUES (%d, '%s', '%s', '%s', %d, '%s', %d)",
@@ -855,15 +797,13 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
       ));
       drupal_set_message($_FILES['files']['name']['result1'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['result1'], $root_path . $dest_path . $_FILES['files']['name']['result1'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['result1'], 'error');
     }
   } //$_FILES['files']['name']['result1']
   /* handle result2 file */
   $cur_file_id = $form_state['values']['cur_result2_file_id'];
-  if ($cur_file_id > 0)
-  {
+  if ($cur_file_id > 0) {
     /*$file_q = db_query("SELECT * FROM  {textbook_companion_example_files} WHERE id = %d AND example_id = %d", $cur_file_id, $example_data->id);
     $file_data = db_fetch_object($file_q);*/
     $query = db_select('textbook_companion_example_files');
@@ -872,40 +812,32 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
     $query->condition('example_id', $example_data->id);
     $result = $query->execute();
     $file_data = $result->fetchObject();
-    if (!$file_data)
-    {
+    if (!$file_data) {
       drupal_set_message("Error deleting example result 2 file. File not present in database.", 'error');
       return;
     } //!$file_data
-    if (($form_state['values']['cur_result2_checkbox'] == 1) && (!$_FILES['files']['name']['result2']))
-    {
-      if (!delete_file($cur_file_id))
-      {
+    if (($form_state['values']['cur_result2_checkbox'] == 1) && (!$_FILES['files']['name']['result2'])) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error deleting example result 2 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //($form_state['values']['cur_result2_checkbox'] == 1) && (!$_FILES['files']['name']['result2'])
   } //$cur_file_id > 0
-  if ($_FILES['files']['name']['result2'])
-  {
-    if ($cur_file_id > 0)
-    {
-      if (!delete_file($cur_file_id))
-      {
+  if ($_FILES['files']['name']['result2']) {
+    if ($cur_file_id > 0) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error removing previous example result 2 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //$cur_file_id > 0
-    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['result2']))
-    {
+    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['result2'])) {
       drupal_set_message(t("Error uploading result 2 file. File !filename already exists.", array(
         '!filename' => $_FILES['files']['name']['result2']
       )), 'error');
       return;
     } //file_exists($root_path . $dest_path . $_FILES['files']['name']['result2'])
     /* uploading file */
-    if (move_uploaded_file($_FILES['files']['tmp_name']['result2'], $root_path . $dest_path . $_FILES['files']['name']['result2']))
-    {
+    if (move_uploaded_file($_FILES['files']['tmp_name']['result2'], $root_path . $dest_path . $_FILES['files']['name']['result2'])) {
       /* for uploaded files making an entry in the database */
       /*db_query("INSERT INTO {textbook_companion_example_files} (example_id, filename, filepath, filemime, filesize, filetype, timestamp)
       VALUES (%d, '%s', '%s', '%s', %d, '%s', %d)",
@@ -933,15 +865,13 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
       ));
       drupal_set_message($_FILES['files']['name']['result2'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['result2'], $root_path . $dest_path . $_FILES['files']['name']['result2'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['result2'], 'error');
     }
   } //$_FILES['files']['name']['result2']
   /* handle xcos1 file */
   $cur_file_id = $form_state['values']['cur_xcos1_file_id'];
-  if ($cur_file_id > 0)
-  {
+  if ($cur_file_id > 0) {
     /*$file_q = db_query("SELECT * FROM  {textbook_companion_example_files} WHERE id = %d AND example_id = %d", $cur_file_id, $example_data->id);
     $file_data = db_fetch_object($file_q);*/
     $query = db_select('textbook_companion_example_files');
@@ -950,40 +880,32 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
     $query->condition('example_id', $example_data->id);
     $result = $query->execute();
     $file_data = $result->fetchObject();
-    if (!$file_data)
-    {
+    if (!$file_data) {
       drupal_set_message("Error deleting example xcos 1 file. File not present in database.", 'error');
       return;
     } //!$file_data
-    if (($form_state['values']['cur_xcos1_checkbox'] == 1) && (!$_FILES['files']['name']['xcos1']))
-    {
-      if (!delete_file($cur_file_id))
-      {
+    if (($form_state['values']['cur_xcos1_checkbox'] == 1) && (!$_FILES['files']['name']['xcos1'])) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error deleting example xcos 1 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //($form_state['values']['cur_xcos1_checkbox'] == 1) && (!$_FILES['files']['name']['xcos1'])
   } //$cur_file_id > 0
-  if ($_FILES['files']['name']['xcos1'])
-  {
-    if ($cur_file_id > 0)
-    {
-      if (!delete_file($cur_file_id))
-      {
+  if ($_FILES['files']['name']['xcos1']) {
+    if ($cur_file_id > 0) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error removing previous example xcos 1 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //$cur_file_id > 0
-    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos1']))
-    {
+    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos1'])) {
       drupal_set_message(t("Error uploading xcos 1 file. File !filename already exists.", array(
         '!filename' => $_FILES['files']['name']['xcos1']
       )), 'error');
       return;
     } //file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos1'])
     /* uploading file */
-    if (move_uploaded_file($_FILES['files']['tmp_name']['xcos1'], $root_path . $dest_path . $_FILES['files']['name']['xcos1']))
-    {
+    if (move_uploaded_file($_FILES['files']['tmp_name']['xcos1'], $root_path . $dest_path . $_FILES['files']['name']['xcos1'])) {
       /* for uploaded files making an entry in the database */
       /*db_query("INSERT INTO {textbook_companion_example_files} (example_id, filename, filepath, filemime, filesize, filetype, timestamp)
       VALUES (%d, '%s', '%s', '%s', %d, '%s', %d)",
@@ -1011,15 +933,13 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
       ));
       drupal_set_message($_FILES['files']['name']['xcos1'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['xcos1'], $root_path . $dest_path . $_FILES['files']['name']['xcos1'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['xcos1'], 'error');
     }
   } //$_FILES['files']['name']['xcos1']
   /* handle xcos2 file */
   $cur_file_id = $form_state['values']['cur_xcos2_file_id'];
-  if ($cur_file_id > 0)
-  {
+  if ($cur_file_id > 0) {
     /*$file_q = db_query("SELECT * FROM  {textbook_companion_example_files} WHERE id = %d AND example_id = %d", $cur_file_id, $example_data->id);
     $file_data = db_fetch_object($file_q);*/
     $query = db_select('textbook_companion_example_files');
@@ -1028,40 +948,32 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
     $query->condition('example_id', $example_data->id);
     $result = $query->execute();
     $file_data = $result->fetchObject();
-    if (!$file_data)
-    {
+    if (!$file_data) {
       drupal_set_message("Error deleting example xcos 2 file. File not present in database.", 'error');
       return;
     } //!$file_data
-    if (($form_state['values']['cur_xcos2_checkbox'] == 1) && (!$_FILES['files']['name']['xcos2']))
-    {
-      if (!delete_file($cur_file_id))
-      {
+    if (($form_state['values']['cur_xcos2_checkbox'] == 1) && (!$_FILES['files']['name']['xcos2'])) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error deleting example xcos 2 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //($form_state['values']['cur_xcos2_checkbox'] == 1) && (!$_FILES['files']['name']['xcos2'])
   } //$cur_file_id > 0
-  if ($_FILES['files']['name']['xcos2'])
-  {
-    if ($cur_file_id > 0)
-    {
-      if (!delete_file($cur_file_id))
-      {
+  if ($_FILES['files']['name']['xcos2']) {
+    if ($cur_file_id > 0) {
+      if (!delete_file($cur_file_id)) {
         drupal_set_message("Error removing previous example xcos 2 file.", 'error');
         return;
       } //!delete_file($cur_file_id)
     } //$cur_file_id > 0
-    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos2']))
-    {
+    if (file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos2'])) {
       drupal_set_message(t("Error uploading xcos 2 file. File !filename already exists.", array(
         '!filename' => $_FILES['files']['name']['xcos2']
       )), 'error');
       return;
     } //file_exists($root_path . $dest_path . $_FILES['files']['name']['xcos2'])
     /* uploading file */
-    if (move_uploaded_file($_FILES['files']['tmp_name']['xcos2'], $root_path . $dest_path . $_FILES['files']['name']['xcos2']))
-    {
+    if (move_uploaded_file($_FILES['files']['tmp_name']['xcos2'], $root_path . $dest_path . $_FILES['files']['name']['xcos2'])) {
       /* for uploaded files making an entry in the database */
       /*db_query("INSERT INTO {textbook_companion_example_files} (example_id, filename, filepath, filemime, filesize, filetype, timestamp)
       VALUES (%d, '%s', '%s', '%s', %d, '%s', %d)",
@@ -1089,8 +1001,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
       ));
       drupal_set_message($_FILES['files']['name']['xcos2'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['xcos2'], $root_path . $dest_path . $_FILES['files']['name']['xcos2'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['xcos2'], 'error');
     }
   } //$_FILES['files']['name']['xcos2']
@@ -1105,8 +1016,7 @@ function upload_examples_admin_edit_form_submit($form, &$form_state)
 /******************************************************************************/
 /************************** GENERAL FUNCTIONS *********************************/
 /******************************************************************************/
-function _list_of_book_titles()
-{
+function _list_of_book_titles() {
   $book_titles = array(
     '0' => 'Please select...'
   );
@@ -1119,14 +1029,12 @@ function _list_of_book_titles()
   $query->condition($or);
   $query->orderBy('book', 'ASC');
   $book_titles_q = $query->execute();
-  while ($book_titles_data = $book_titles_q->fetchObject())
-  {
+  while ($book_titles_data = $book_titles_q->fetchObject()) {
     $book_titles[$book_titles_data->id] = $book_titles_data->book . ' (Written by ' . $book_titles_data->author . ')';
   } //$book_titles_data = $book_titles_q->fetchObject()
   return $book_titles;
 }
-function _list_of_book_dependency_files()
-{
+function _list_of_book_dependency_files() {
   $book_dependency_files = array();
   $book_dependency_files_class = array();
   /*$book_dependency_files_q = db_query("SELECT * FROM {textbook_companion_dependency_files} ORDER BY filename ASC");*/
@@ -1134,8 +1042,7 @@ function _list_of_book_dependency_files()
   $query->fields('textbook_companion_dependency_files');
   $query->orderBy('filename', 'ASC');
   $book_dependency_files_q = $query->execute();
-  while ($book_dependency_files_data = $book_dependency_files_q->fetchObject())
-  {
+  while ($book_dependency_files_data = $book_dependency_files_q->fetchObject()) {
     $temp_caption = '';
     if ($book_dependency_files_data->caption)
       $temp_caption .= ' (' . $book_dependency_files_data->caption . ')';
@@ -1150,23 +1057,21 @@ function _list_of_book_dependency_files()
 /**
  *function returning completed books
  */
-function completed_book()
-{
+function completed_book() {
   $book_options_list = array();
   $preference_q = db_query("SELECT DISTINCT preference_id FROM {textbook_companion_dependency_files}");
-  while($preference_data = $preference_q->fetchObject()) {
+  while ($preference_data = $preference_q->fetchObject()) {
     $query = db_select('textbook_companion_preference');
     $query->fields('textbook_companion_preference');
     $query->condition('id', $preference_data->preference_id);
     $query->orderBy('book', 'ASC');
     $query = $query->execute();
     $book_data = $query->fetchObject();
-    if($book_data->book)
+    if ($book_data->book)
       $book_options_list[$preference_data->preference_id] = $book_data->book;
   }
   return $book_options_list;
 }
-function ajax_checkboxes_callback($form, &$form_state)
-{
+function ajax_checkboxes_callback($form, &$form_state) {
   return $form['existing_depfile']['checkboxes_fieldset'];
 }

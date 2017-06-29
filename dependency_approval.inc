@@ -2,8 +2,7 @@
 /******************************************************************************/
 /**************************** DEPNDENCY APPROVAL ******************************/
 /******************************************************************************/
-function textbook_companion_dependency_approval_form($form_state)
-{
+function textbook_companion_dependency_approval_form($form_state) {
   // $form['#redirect'] = FALSE;
   // ahah_helper_register($form, $form_state);
   /* default value for ahah fields */
@@ -90,30 +89,24 @@ function textbook_companion_dependency_approval_form($form_state)
   // }
   return $form;
 }
-function textbook_companion_dependency_approval_form_submit($form, &$form_state)
-{
+function textbook_companion_dependency_approval_form_submit($form, &$form_state) {
   global $user;
   $root_path = textbook_companion_path();
-  if ($form_state['clicked_button']['#value'] == 'Submit')
-  {
-    if (user_access('bulk manage code'))
-    {
-      if ($form_state['values']['run']['delete_dependency'] == "1")
-      {
+  if ($form_state['clicked_button']['#value'] == 'Submit') {
+    if (user_access('bulk manage code')) {
+      if ($form_state['values']['run']['delete_dependency'] == "1") {
         /*$example_q = db_query("SELECT * FROM {textbook_companion_example_dependency} WHERE dependency_id = %d", $form_state['values']['run']['dependency']);*/
         $query = db_select('textbook_companion_example_dependency');
         $query->fields('textbook_companion_example_dependency');
         $query->condition('dependency_id', $form_state['values']['run']['dependency']);
         $example_q = $query->execute();
-        if ($example_data = $example_q->fetchObject())
-        {
+        if ($example_data = $example_q->fetchObject()) {
           /*$example_id_q = db_query("SELECT * FROM {textbook_companion_example_dependency} WHERE dependency_id = %d", $form_state['values']['run']['dependency']);*/
           $query = db_select('textbook_companion_example_dependency');
           $query->fields('textbook_companion_example_dependency');
           $query->condition('dependency_id', $form_state['values']['run']['dependency']);
           $example_id_q = $query->execute();
-          while ($example_id_data = $example_id_q->fetchObject())
-          {
+          while ($example_id_data = $example_id_q->fetchObject()) {
             /*$example_q = db_query("SELECT * FROM {textbook_companion_example} WHERE id = %d", $example_id_data->example_id);
             $example_data = db_fetch_object($example_q);*/
             $query = db_select('textbook_companion_example');
@@ -152,10 +145,8 @@ function textbook_companion_dependency_approval_form_submit($form, &$form_state)
           ));
           drupal_set_message('Cannot delete dependency since it is linked with following examples. Delete these examples first before deleting the dependency file :' . $example, 'error');
         } //$example_data = $example_q->fetchObject()
-        else
-        {
-          if (textbook_companion_delete_dependency($form_state['values']['run']['dependency']))
-          {
+        else {
+          if (textbook_companion_delete_dependency($form_state['values']['run']['dependency'])) {
             drupal_set_message('Dependency deleted', 'status');
             /* email */
             $email_subject = t('Dependency deleted');
@@ -171,8 +162,7 @@ function textbook_companion_dependency_approval_form_submit($form, &$form_state)
     } //user_access('bulk manage code')
   } //$form_state['clicked_button']['#value'] == 'Submit'
 }
-function _textbook_companion_list_of_dependencies()
-{
+function _textbook_companion_list_of_dependencies() {
   $dependencies = array(
     '0' => 'Please select...'
   );
@@ -181,14 +171,12 @@ function _textbook_companion_list_of_dependencies()
   $query->fields('textbook_companion_dependency_files');
   $query->orderBy('filename', 'ASC');
   $dependency_q = $query->execute();
-  while ($dependency_data = $dependency_q->fetchObject())
-  {
+  while ($dependency_data = $dependency_q->fetchObject()) {
     $dependencies[$dependency_data->id] = $dependency_data->filename . ' (' . $dependency_data->filepath . ')';
   } //$dependency_data = $dependency_q->fetchObject()
   return $dependencies;
 }
-function textbook_companion_delete_dependency($dependency_id)
-{
+function textbook_companion_delete_dependency($dependency_id) {
   global $user;
   $root_path = textbook_companion_path();
   $status = TRUE;
@@ -199,21 +187,18 @@ function textbook_companion_delete_dependency($dependency_id)
   $query->condition('id', $dependency_id);
   $result = $query->execute();
   $dependency_files_data = $result->fetchObject();
-  if (!$dependency_files_data)
-  {
+  if (!$dependency_files_data) {
     drupal_set_message(t('Invalid dependency.'), 'error');
     return FALSE;
   } //!$dependency_files_data
-  if (!file_exists($root_path . $dependency_files_data->filepath))
-  {
+  if (!file_exists($root_path . $dependency_files_data->filepath)) {
     drupal_set_message(t('Error deleting !file. File does not exists.', array(
       '!file' => $dependency_files_data->filepath
     )), 'error');
     return FALSE;
   } //!file_exists($root_path . $dependency_files_data->filepath)
   /* removing dependency file */
-  if (!unlink($root_path . $dependency_files_data->filepath))
-  {
+  if (!unlink($root_path . $dependency_files_data->filepath)) {
     $status = FALSE;
     drupal_set_message(t('Error deleting !file', array(
       '!file' => $dependency_files_data->filepath
@@ -228,8 +213,7 @@ function textbook_companion_delete_dependency($dependency_id)
     if (!drupal_mail('textbook_companion', 'standard', $email_to, language_default(), $param, variable_get('textbook_companion_from_email', NULL), TRUE))
       drupal_set_message('Error sending email message.', 'error');
   } //!unlink($root_path . $dependency_files_data->filepath)
-  else
-  {
+  else {
     /* deleting dependency files database entries */
     /*db_query("DELETE FROM {textbook_companion_dependency_files} WHERE id = %d", $dependency_id);*/
     $query = db_delete('textbook_companion_dependency_files');

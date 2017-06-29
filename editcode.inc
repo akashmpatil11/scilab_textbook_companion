@@ -9,7 +9,7 @@ function upload_examples_edit() {
 function upload_examples_edit_form($form, &$form_state) {
   $form = array();
   global $user;
-  if($form_state['values']['example_id'])
+  if ($form_state['values']['example_id'])
     $example_id = $form_state['values']['example_id'];
   else
     $example_id = arg(3);
@@ -26,14 +26,12 @@ function upload_examples_edit_form($form, &$form_state) {
   $query->range(0, 1);
   $example_q = $query->execute();
   $example_data = $example_q->fetchObject();
-  if (!$example_data)
-  {
+  if (!$example_data) {
     drupal_set_message(t("Invalid example selected."), 'error');
     drupal_goto('');
     return;
   } //!$example_q
-  if ($example_data->approval_status != 0)
-  {
+  if ($example_data->approval_status != 0) {
     drupal_set_message(t("You cannot edit an example after it has been approved or dis-approved. Please contact site administrator if you want to edit this example."), 'error');
     drupal_goto('');
     return;
@@ -88,8 +86,7 @@ function upload_examples_edit_form($form, &$form_state) {
   $query->condition('id', $example_data->chapter_id);
   $result = $query->execute();
   $chapter_data = $result->fetchObject();
-  if (!$chapter_data)
-  {
+  if (!$chapter_data) {
     drupal_set_message(t("Invalid chapter selected."), 'error');
     drupal_goto('');
     return;
@@ -102,14 +99,12 @@ function upload_examples_edit_form($form, &$form_state) {
   $query->condition('id', $chapter_data->preference_id);
   $result = $query->execute();
   $preference_data = $result->fetchObject();
-  if (!$preference_data)
-  {
+  if (!$preference_data) {
     drupal_set_message(t("Invalid book selected."), 'error');
     drupal_goto('');
     return;
   } //!$preference_data
-  if ($preference_data->approval_status != 1)
-  {
+  if ($preference_data->approval_status != 1) {
     drupal_set_message(t("Cannot edit example. Either the book proposal has not been approved or it has been rejected."), 'error');
     drupal_goto('');
     return;
@@ -126,7 +121,7 @@ function upload_examples_edit_form($form, &$form_state) {
   if (!$proposal_data) {
     //drupal_set_message(t("Invalid proposal selected."), 'error');
     //drupal_goto('');
-    die("Invalid proposal selected.".$proposal_data . "Invalid proposal selected.");
+    die("Invalid proposal selected." . $proposal_data . "Invalid proposal selected.");
     return;
   } //!$proposal_data
   if ($proposal_data->uid != $user->uid) {
@@ -292,20 +287,22 @@ function upload_examples_edit_form($form, &$form_state) {
     '#options' => completed_book(),
     '#ajax' => array(
       'callback' => 'ajax_checkboxes_callback',
-      'wrapper' => 'checkboxes-div',
-     ),
-    '#multiple' => FALSE,
+      'wrapper' => 'checkboxes-div'
+    ),
+    '#multiple' => FALSE
   );
   $form['existing_depfile']['checkboxes_fieldset'] = array(
     '#prefix' => '<div id = "checkboxes-div">',
     '#suffix' => '</div>',
     '#type' => 'checkboxes',
-    '#title' => 'Dependency files for selected book.',
+    '#title' => 'Dependency files for selected book.'
   );
-  if(isset($form_state['values']['existing_depfile']['dep_chapter_example_files'])) {
+  if (isset($form_state['values']['existing_depfile']['dep_chapter_example_files'])) {
     $val = $form_state['values']['existing_depfile']['dep_chapter_example_files'];
-    if($val != 0) {
-      $query = db_query('SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = (:preference_id)', array(':preference_id' => $val));
+    if ($val != 0) {
+      $query = db_query('SELECT * FROM {textbook_companion_dependency_files} WHERE preference_id = (:preference_id)', array(
+        ':preference_id' => $val
+      ));
       $option_list = array();
       $row = $query->rowCount();
       if ($row == 0) {
@@ -313,8 +310,7 @@ function upload_examples_edit_form($form, &$form_state) {
           '#type' => 'item',
           '#markup' => 'This lab has no dependency files.'
         );
-      }
-      else {
+      } else {
         $dependency_options_list = array();
         while ($curr_val = $query->fetchObject()) {
           // $form['checkboxes_fieldset']["checkbox$cnt"] = array(
@@ -477,7 +473,7 @@ function upload_examples_edit_form($form, &$form_state) {
     '#type' => 'markup',
     '#value' => l(t('Cancel'), 'textbook_companion/code')
   );
-  return $form;;
+  return $form;
 }
 function upload_examples_edit_form_validate($form, &$form_state) {
   if (!check_name($form_state['values']['example_caption']))
@@ -496,7 +492,7 @@ function upload_examples_edit_form_validate($form, &$form_state) {
         else
           $file_type = 'U';
         $allowed_extensions_str = '';
-        switch ($file_type){
+        switch ($file_type) {
           case 'S':
             $allowed_extensions_str = variable_get('textbook_companion_source_extensions', '');
             break;
@@ -942,8 +938,7 @@ function upload_examples_edit_form_submit($form, &$form_state) {
       ));
       drupal_set_message($_FILES['files']['name']['xcos1'] . ' uploaded successfully.', 'status');
     } //move_uploaded_file($_FILES['files']['tmp_name']['xcos1'], $root_path . $dest_path . $_FILES['files']['name']['xcos1'])
-    else
-    {
+    else {
       drupal_set_message('Error uploading file : ' . $dest_path . '/' . $_FILES['files']['name']['xcos1'], 'error');
     }
   } //$_FILES['files']['name']['xcos1']
@@ -1030,7 +1025,7 @@ function edit_chapter_title_form($form, &$form_state) {
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
   $proposal_data = db_fetch_object($proposal_q);*/
-	$query = db_select('textbook_companion_proposal');
+  $query = db_select('textbook_companion_proposal');
   $query->fields('textbook_companion_proposal');
   $query->condition('uid', $user->uid);
   $query->orderBy('id', 'DESC');
@@ -1100,9 +1095,8 @@ function edit_chapter_title_form($form, &$form_state) {
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -1190,7 +1184,7 @@ function edit_chapter_title_form_submit($form, &$form_state) {
   /************************ start approve book details ************************/
   /*$proposal_q = db_query("SELECT * FROM {textbook_companion_proposal} WHERE uid = %d ORDER BY id DESC LIMIT 1", $user->uid);
   $proposal_data = db_fetch_object($proposal_q);*/
-	$query = db_select('textbook_companion_proposal');
+  $query = db_select('textbook_companion_proposal');
   $query->fields('textbook_companion_proposal');
   $query->condition('uid', $user->uid);
   $query->orderBy('id', 'DESC');
@@ -1260,9 +1254,8 @@ function edit_chapter_title_form_submit($form, &$form_state) {
         return;
         break;
     }
-  }
-  else {
-    if($preference_data->book_status != 0) {
+  } else {
+    if ($preference_data->book_status != 0) {
       switch ($preference_data->book_status) {
         case 1:
           drupal_set_message(t('You book propsoal has been sent for review. We will get back to you soon.'), 'status');
@@ -1384,14 +1377,14 @@ function _list_of_book_dependency_files() {
 function completed_book() {
   $book_options_list = array();
   $preference_q = db_query("SELECT DISTINCT preference_id FROM {textbook_companion_dependency_files}");
-  while($preference_data = $preference_q->fetchObject()) {
+  while ($preference_data = $preference_q->fetchObject()) {
     $query = db_select('textbook_companion_preference');
     $query->fields('textbook_companion_preference');
     $query->condition('id', $preference_data->preference_id);
     $query->orderBy('book', 'ASC');
     $query = $query->execute();
     $book_data = $query->fetchObject();
-    if($book_data->book)
+    if ($book_data->book)
       $book_options_list[$preference_data->preference_id] = $book_data->book;
   }
   return $book_options_list;

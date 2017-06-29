@@ -1,21 +1,17 @@
 <?php
-function textbook_companion_run_form($form, &$form_state)
-{
+function textbook_companion_run_form($form, &$form_state) {
   $url_category_id = (int) arg(3);
   $url_subcategory_id = (int) arg(2);
   $url_book_pref_id = (int) arg(1);
-  if ($url_book_pref_id != NULL && $url_subcategory_id != NULL && $url_category_id != NULL)
-  {
+  if ($url_book_pref_id != NULL && $url_subcategory_id != NULL && $url_category_id != NULL) {
     $category_default_value = $url_category_id;
     $subcategory_default_value = $url_subcategory_id;
   } //$url_book_pref_id
-  else
-  {
+  else {
     $category_default_value = 0;
     $subcategory_default_value = 0;
   }
-  if ($url_book_pref_id && $url_subcategory_id && $url_category_id)
-  {
+  if ($url_book_pref_id && $url_subcategory_id && $url_category_id) {
     $form['category'] = array(
       '#type' => 'select',
       '#title' => t('Category'),
@@ -134,8 +130,7 @@ function textbook_companion_run_form($form, &$form_state)
       '#markup' => '<div id="ajax-download-example-files-replace"></div>'
     );
   } //$url_book_pref_id
-  else
-  {
+  else {
     $form['category'] = array(
       '#type' => 'select',
       '#title' => t('Category'),
@@ -252,12 +247,10 @@ function textbook_companion_run_form($form, &$form_state)
   return $form;
 }
 /********************* Ajax callback ***************************/
-function ajax_book_list_callback($form, $form_state)
-{
+function ajax_book_list_callback($form, $form_state) {
   $category_default_value = $form_state['values']['category'];
   $subcategory_default_value = $form_state['values']['subcategory'];
-  if ($category_default_value != 0 && $subcategory_default_value == 0)
-  {
+  if ($category_default_value != 0 && $subcategory_default_value == 0) {
     $commands[] = ajax_command_html("#ajax-book-list-replace", '');
     $commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
     $commands[] = ajax_command_html("#ajax-example-list-replace", '');
@@ -268,15 +261,13 @@ function ajax_book_list_callback($form, $form_state)
     $commands[] = ajax_command_html("#ajax-download-example-code-replace", '');
     $commands[] = ajax_command_html("#ajax-download-example-files-replace", '');
   } //$category_default_value > 0
-  elseif ($category_default_value != 0 && $subcategory_default_value != 0)
-  {
+  elseif ($category_default_value != 0 && $subcategory_default_value != 0) {
     $form['book']['#options'] = _list_of_books($category_default_value, $subcategory_default_value);
     $commands[] = ajax_command_replace("#ajax-book-list-replace", drupal_render($form['book']));
     $commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
     $commands[] = ajax_command_html("#ajax-example-list-replace", '');
   } //$category_default_value != 0 && $subcategory_default_value != 0
-  else
-  {
+  else {
     $commands[] = ajax_command_html("#ajax-book-list-replace", '');
     $commands[] = ajax_command_html("#ajax-subcategory-list-replace", '');
     $commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
@@ -295,19 +286,16 @@ function ajax_book_list_callback($form, $form_state)
 }
 /*************************************************************************/
 /********************* Ajax callback ***************************/
-function ajax_subcategory_list_callback($form, $form_state)
-{
+function ajax_subcategory_list_callback($form, $form_state) {
   $category_default_value = $form_state['values']['category'];
-  if ($category_default_value > 0)
-  {
+  if ($category_default_value > 0) {
     $form['subcategory']['#options'] = _list_of_subcategory($category_default_value);
     $commands[] = ajax_command_replace("#ajax-subcategory-list-replace", drupal_render($form['subcategory']));
     $commands[] = ajax_command_html("#ajax-book-list-replace", '');
     $commands[] = ajax_command_html("#ajax-chapter-list-replace", '');
     $commands[] = ajax_command_html("#ajax-example-list-replace", '');
   } //$category_default_value > 0
-  else
-  {
+  else {
     //$form['subcategory']['#options'] = _list_of_subcategory();
     //$commands[] = ajax_command_replace("#ajax-subcategory-list-replace", drupal_render($form['subcategory']));
     $commands[] = ajax_command_html("#ajax-subcategory-list-replace", '');
@@ -326,11 +314,9 @@ function ajax_subcategory_list_callback($form, $form_state)
     '#commands' => $commands
   );
 }
-function ajax_chapter_list_callback($form, $form_state)
-{
+function ajax_chapter_list_callback($form, $form_state) {
   $book_list_default_value = $form_state['values']['book'];
-  if ($book_list_default_value > 0)
-  {
+  if ($book_list_default_value > 0) {
     $commands[] = ajax_command_html("#ajax-book-details-replace", _html_book_info($book_list_default_value));
     $form['chapter']['#options'] = _list_of_chapters($book_list_default_value);
     $commands[] = ajax_command_html("#ajax-download-book-replace", l('Download', 'download/book/' . $book_list_default_value) . ' ' . t('(Download the Scilab codes for all the solved examples)'));
@@ -341,8 +327,7 @@ function ajax_chapter_list_callback($form, $form_state)
     $commands[] = ajax_command_html("#ajax-download-example-files-replace", '');
     $commands[] = ajax_command_html("#ajax-download-chapter-replace", '');
   } //$book_list_default_value > 0
-  else
-  {
+  else {
     $commands[] = ajax_command_html("#ajax-book-details-replace", '');
     $form['chapter']['#options'] = _list_of_chapters();
     $commands[] = ajax_command_replace("#ajax-chapter-list-replace", drupal_render($form['chapter']));
@@ -359,19 +344,16 @@ function ajax_chapter_list_callback($form, $form_state)
     '#commands' => $commands
   );
 }
-function ajax_example_list_callback($form, $form_state)
-{
+function ajax_example_list_callback($form, $form_state) {
   $chapter_list_default_value = $form_state['values']['chapter'];
-  if ($chapter_list_default_value > 0)
-  {
+  if ($chapter_list_default_value > 0) {
     $form['examples']['#options'] = _list_of_examples($chapter_list_default_value);
     $commands[] = ajax_command_replace("#ajax-example-list-replace", drupal_render($form['examples']));
     $commands[] = ajax_command_html("#ajax-download-chapter-replace", l('Download', 'download/chapter/' . $chapter_list_default_value) . ' ' . t('(Download the Scilab codes for all the solved examples from the Chapter)'));
     $commands[] = ajax_command_html("#ajax-download-example-code-replace", '');
     $commands[] = ajax_command_html("#ajax-download-example-files-replace", '');
   } //$chapter_list_default_value > 0
-  else
-  {
+  else {
     $form['examples']['#options'] = _list_of_examples();
     $commands[] = ajax_command_replace("#ajax-example-list-replace", drupal_render($form['examples']));
     $commands[] = ajax_command_html("#ajax-example-list-replace", '');
@@ -385,24 +367,19 @@ function ajax_example_list_callback($form, $form_state)
   );
 }
 /*****************************************************/
-function ajax_example_files_callback($form, $form_state)
-{
+function ajax_example_files_callback($form, $form_state) {
   $example_list_default_value = $form_state['values']['examples'];
-  if ($example_list_default_value != 0)
-  {
+  if ($example_list_default_value != 0) {
     //  $example_list_q = db_query("SELECT * FROM {textbook_companion_example_files} WHERE example_id = %d", $form_state['values']['run']['example']);
     $query = db_select('textbook_companion_example_files');
     $query->fields('textbook_companion_example_files');
     $query->condition('example_id', $example_list_default_value);
     $example_list_q = $query->execute();
-    if ($example_list_q)
-    {
+    if ($example_list_q) {
       $example_files_rows = array();
-      while ($example_list_data = $example_list_q->fetchObject())
-      {
+      while ($example_list_data = $example_list_q->fetchObject()) {
         $example_file_type = '';
-        switch ($example_list_data->filetype)
-        {
+        switch ($example_list_data->filetype) {
           case 'S':
             $example_file_type = 'Source or Main file';
             break;
@@ -435,8 +412,7 @@ function ajax_example_files_callback($form, $form_state)
       $query->leftJoin('textbook_companion_dependency_files', 'dependency', 'example_dependency.dependency_id = dependency.id');
       $query->condition('example_dependency.example_id', $form_state['values']['example_list']);
       $dependency_list_q = $query->execute();
-      while ($dependency_list_data = $dependency_list_q->fetchObject())
-      {
+      while ($dependency_list_data = $dependency_list_q->fetchObject()) {
         $example_file_type = 'Dependency file';
         $temp_caption = '';
         if ($dependency_list_data->dependency_caption)
@@ -459,8 +435,7 @@ function ajax_example_files_callback($form, $form_state)
     $commands[] = ajax_command_html("#ajax-download-example-code-replace", l('Download Scilab code for the example', 'download/example/' . $example_list_default_value));
     $commands[] = ajax_command_html("#ajax-download-example-files-replace", $example_files);
   } //$example_list_default_value != 0
-  else
-  {
+  else {
     $commands[] = ajax_command_html("#ajax-download-example-code-replace", '');
     $commands[] = ajax_command_html("#ajax-download-example-files-replace", '');
   }
@@ -470,19 +445,15 @@ function ajax_example_files_callback($form, $form_state)
   );
 }
 /*******************************************************************/
-function bootstrap_table_format($headers, $rows)
-{
+function bootstrap_table_format($headers, $rows) {
   $thead = "";
   $tbody = "";
-  foreach ($headers as $header)
-  {
+  foreach ($headers as $header) {
     $thead .= "<th>{$header}</th>";
   } //$headers as $header
-  foreach ($rows as $row)
-  {
+  foreach ($rows as $row) {
     $tbody .= "<tr>";
-    foreach ($row as $data)
-    {
+    foreach ($row as $data) {
       $tbody .= "<td>{$data}</td>";
     } //$row as $data
     $tbody .= "</tr>";
@@ -496,59 +467,50 @@ function bootstrap_table_format($headers, $rows)
   return $table;
 }
 /***********************************************************************************/
-function _list_of_category($category_id = NULL)
-{
+function _list_of_category($category_id = NULL) {
   $category = "";
   $category[0] .= "Please select";
-  if ($category_id == NULL)
-  {
+  if ($category_id == NULL) {
     $query = db_select('list_of_category');
     $query->fields('list_of_category');
     $query->orderBy('category_id', 'ASC');
     $category_list = $query->execute();
   } //$category_id == NULL
-  else
-  {
+  else {
     $query = db_select('list_of_category');
     $query->fields('list_of_category');
     $query->condition('category_id', $category_id);
     $query->orderBy('id', 'ASC');
     $category_list = $query->execute();
   }
-  while ($category_list_data = $category_list->fetchObject())
-  {
+  while ($category_list_data = $category_list->fetchObject()) {
     $category[$category_list_data->category_id] .= $category_list_data->maincategory;
   } //$category_list_data = $category_list->fetchObject()
   return $category;
 }
-function _list_of_subcategory($category_id = NULL)
-{
+function _list_of_subcategory($category_id = NULL) {
   $subcategory = "";
   $subcategory[0] .= "Please select";
-  if ($category_id == NULL)
-  {
+  if ($category_id == NULL) {
     $query = db_select('list_of_subcategory');
     $query->fields('list_of_subcategory');
     $query->condition('maincategory_id', $category_id);
     $query->orderBy('subcategory_id', 'ASC');
     $subcategory_list = $query->execute();
   } //$category_id == NULL
-  else
-  {
+  else {
     $query = db_select('list_of_subcategory');
     $query->fields('list_of_subcategory');
     $query->condition('maincategory_id', $category_id);
     $query->orderBy('id', 'ASC');
     $subcategory_list = $query->execute();
   }
-  while ($subcategory_list_data = $subcategory_list->fetchObject())
-  {
+  while ($subcategory_list_data = $subcategory_list->fetchObject()) {
     $subcategory[$subcategory_list_data->subcategory_id] .= $subcategory_list_data->subcategory;
   } //$category_list_data = $category_list->fetchObject()
   return $subcategory;
 }
-function _list_of_books($category_default_value, $subcategory_default_value)
-{
+function _list_of_books($category_default_value, $subcategory_default_value) {
   $book_titles = array(
     0 => 'Please select ...'
   );
@@ -566,21 +528,17 @@ function _list_of_books($category_default_value, $subcategory_default_value)
     ":sub_category" => $subcategory_default_value,
     "main_category" => $category_default_value
   ));
-  if ($book_titles_q->rowCount() != 0)
-  {
-    while ($book_titles_data = $book_titles_q->fetchObject())
-    {
+  if ($book_titles_q->rowCount() != 0) {
+    while ($book_titles_data = $book_titles_q->fetchObject()) {
       $book_titles[$book_titles_data->pe_id] = $book_titles_data->book . ' (Written by ' . $book_titles_data->author . ')';
     } //$book_titles_data = $book_titles_q->fetchObject()
   } //$book_titles_q->rowCount() != 0
-  else
-  {
+  else {
     $book_titles[0] = "There are no books availabe in this sub category.";
   }
   return $book_titles;
 }
-function _list_of_chapters($preference_id = 0)
-{
+function _list_of_chapters($preference_id = 0) {
   $book_chapters = array(
     0 => 'Please select...'
   );
@@ -590,14 +548,12 @@ function _list_of_chapters($preference_id = 0)
   $query->condition('preference_id', $preference_id);
   $query->orderBy('number', 'ASC');
   $book_chapters_q = $query->execute();
-  while ($book_chapters_data = $book_chapters_q->fetchObject())
-  {
+  while ($book_chapters_data = $book_chapters_q->fetchObject()) {
     $book_chapters[$book_chapters_data->id] = $book_chapters_data->number . '. ' . $book_chapters_data->name;
   } //$book_chapters_data = $book_chapters_q->fetchObject()
   return $book_chapters;
 }
-function _list_of_examples($chapter_id = 0)
-{
+function _list_of_examples($chapter_id = 0) {
   $book_examples = array(
     0 => 'Please select...'
   );
@@ -611,14 +567,12 @@ function _list_of_examples($chapter_id = 0)
   $query->condition('approval_status', 1);
   //$query->orderBy('', '');
   $book_examples_q = $query->execute();
-  while ($book_examples_data = $book_examples_q->fetchObject())
-  {
+  while ($book_examples_data = $book_examples_q->fetchObject()) {
     $book_examples[$book_examples_data->id] = $book_examples_data->number . ' (' . $book_examples_data->caption . ')';
   } //$book_examples_data = $book_examples_q->fetchObject()
   return $book_examples;
 }
-function _book_information($preference_id)
-{
+function _book_information($preference_id) {
   /*$book_data = db_fetch_object(db_query("SELECT
   preference.book as preference_book, preference.author as preference_author, preference.isbn as preference_isbn, preference.publisher as preference_publisher, preference.edition as preference_edition, preference.year as preference_year,
   proposal.full_name as proposal_full_name, proposal.faculty as proposal_faculty, proposal.reviewer as proposal_reviewer, proposal.course as proposal_course, proposal.branch as proposal_branch, proposal.university as proposal_university
@@ -645,8 +599,7 @@ function _book_information($preference_id)
   $book_data = $query->execute()->fetchObject();
   return $book_data;
 }
-function _html_book_info($preference_id)
-{
+function _html_book_info($preference_id) {
   /*$book_details = db_fetch_object(db_query("SELECT
   preference.book as preference_book, preference.author as preference_author, preference.isbn as preference_isbn, preference.publisher as preference_publisher, preference.edition as preference_edition, preference.year as preference_year,
   proposal.full_name as proposal_full_name, proposal.faculty as proposal_faculty, proposal.reviewer as proposal_reviewer, proposal.course as proposal_course, proposal.branch as proposal_branch, proposal.university as proposal_university
@@ -684,15 +637,12 @@ function _html_book_info($preference_id)
   $query->condition('preference.id', $preference_id);
   $book_details = $query->execute()->fetchObject();
   $html_data = '';
-  if ($book_details)
-  {
-    if ($book_details->proposal_faculty == "None")
-    {
+  if ($book_details) {
+    if ($book_details->proposal_faculty == "None") {
       $html_data = '<table cellspacing="1" cellpadding="1" border="0" style="width: 100%;" valign="top">' . '<tr><td style="width: 35%;"><span style="color: rgb(128, 0, 0);"><strong>About the Book</strong></span></td>
   <td style="width: 35%;"><span style="color: rgb(128, 0, 0);"><strong>About the Contributor</strong></span></td>' . '<tr><td valign="top"><ul>' . '<li><strong>Author:</strong> ' . $book_details->preference_author . '</li>' . '<li><strong>Title of the Book:</strong> ' . $book_details->preference_book . '</li>' . '<li><strong>Publisher:</strong> ' . $book_details->preference_publisher . '</li>' . '<li><strong>Year:</strong> ' . $book_details->preference_year . '</li>' . '<li><strong>Edition:</strong> ' . $book_details->preference_edition . '</li>' . '<li><strong>ISBN:</strong> ' . $book_details->preference_isbn . '</li>' . '</ul></td><td valign="top"><ul>' . '<li><strong>Contributor Name: </strong>' . $book_details->proposal_full_name . ', ' . $book_details->proposal_course . ', ' . $book_details->proposal_branch . ', ' . $book_details->proposal_university . '</li>' . '<li><strong>Reviewer: </strong>' . $book_details->proposal_reviewer . '</li>' . '</ul></td></tr>' . '</table>';
     } //$book_details->proposal_faculty == "None"
-    else
-    {
+    else {
       $html_data = '<table cellspacing="1" cellpadding="1" border="0" style="width: 100%;" valign="top">' . '<tr><td style="width: 35%;"><span style="color: rgb(128, 0, 0);"><strong>About the Book</strong></span></td>
     <td style="width: 35%;"><span style="color: rgb(128, 0, 0);"><strong>About the Contributor</strong></span></td>' . '<tr><td valign="top"><ul>' . '<li><strong>Author:</strong> ' . $book_details->preference_author . '</li>' . '<li><strong>Title of the Book:</strong> ' . $book_details->preference_book . '</li>' . '<li><strong>Publisher:</strong> ' . $book_details->preference_publisher . '</li>' . '<li><strong>Year:</strong> ' . $book_details->preference_year . '</li>' . '<li><strong>Edition:</strong> ' . $book_details->preference_edition . '</li>' . '<li><strong>ISBN:</strong> ' . $book_details->preference_isbn . '</li>' . '</ul></td><td valign="top"><ul>' . '<li><strong>Contributor Name: </strong>' . $book_details->proposal_full_name . ', ' . $book_details->proposal_course . ', ' . $book_details->proposal_branch . ', ' . $book_details->proposal_university . '</li>' . '<li><strong>College Teacher: </strong>' . $book_details->proposal_faculty . '</li>' . '<li><strong>Reviewer: </strong>' . $book_details->proposal_reviewer . '</li>' . '</ul></td></tr>' . '</table>';
     }
