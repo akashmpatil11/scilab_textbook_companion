@@ -1,7 +1,7 @@
 # Textbook Companion project for FOSSEE, IIT Bombay written in Drupal 7
-<hr>
+
 ## Name of Project: Website Development For Scilab Project
-## ame of Author: Akash Patil
+## Name of Author: Akash Patil
 ## Duration: May 2017 to July 2017(Ekalavya Internship, IIT Bombay 2017)
 
 ## Introduction:
