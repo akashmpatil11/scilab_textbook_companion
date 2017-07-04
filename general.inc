@@ -489,18 +489,41 @@ function all_example_submitted_check_form_submit($form, &$form_state, $preferenc
      *Executing bash script to check errors in uploaded examples
      *If errors are there, send mail to user and halt locking procedure
      */
+#    $root_path = textbook_companion_path();
+#    $book_id = $form_state['values']['preference_id'];
+#    //$book_id = 3839;
+#    $book_path = $root_path . $book_id;
+#    //var_dump($root_path."auto_check/");die;
+#    chdir($root_path . "auto_check");
+#    exec("chmod u+x ./auto.sh");
+#    $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
+#    //exec("chmod -R 777"." ".$book_path);
+#    $return = shell_exec($sh_command);
+#    var_dump($return);
+#    die;
     $root_path = textbook_companion_path();
     $book_id = $form_state['values']['preference_id'];
-    //$book_id = 3839;
     $book_path = $root_path . $book_id;
-    //var_dump($root_path."auto_check/");die;
-    chdir($root_path . "auto_check");
-    exec("chmod u+x ./auto.sh");
-    $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
-    //exec("chmod -R 777"." ".$book_path);
-    $return = shell_exec($sh_command);
-    var_dump($return);
-    die;
+    $auto_check_path = $root_path.'auto_check/';
+    $scihome = $auto_check_path.'scilab/';
+    $sci_path = $scihome.'bin/scilab-cli';
+    $sci_graph_path = $auto_check_path . $book_id . '/tbc_graphs';
+    if(file_exists($scipath)){
+#     drupal_set_message('Code will check'
+      copy('./bash/auto.sh', $auto_check_path.'auto.sh');
+      chdir($auto_check_path);
+      exec('chmod u+x ./auto.sh');
+      if(file_exists($auto_check_path.$book_id)){
+        exec('rm -rf '.$book_id);  
+      }
+      $sh_cmd = "export SCIHOME='".$scihome."';";
+      $sh_cmd .= "export SCI_PATH='".$sci_path."';";
+      $sh_cmd .= "export SCI_GRAPH_PATH='".$sci_graph_path."';";
+      $sh_cmd .= "./auto.sh ".$book_path." ".$book_id";";
+      $bash_output = shell_exec(sh_cmd);
+      var_dump($bash_output);
+      die;
+    }
     /**
      *Sending mail to user about Submission Locking
      */
