@@ -510,7 +510,8 @@ function all_example_submitted_check_form_submit($form, &$form_state) {
     $sci_graph_path = $auto_check_path . $book_id . '/tbc_graphs';
     if(file_exists($sci_path)){
 #     drupal_set_message('Code will check'
-      copy('./bash/auto.sh', $auto_check_path.'auto.sh');
+      $module_path = drupal_get_path("module", "textbook_companion");
+      copy($module_path.'/bash/auto.sh', $auto_check_path.'auto.sh');
       chdir($auto_check_path);
       exec('chmod u+x ./auto.sh');
       if(file_exists($auto_check_path.$book_id)){
@@ -520,8 +521,9 @@ function all_example_submitted_check_form_submit($form, &$form_state) {
       $sh_cmd .= "export SCI_PATH='".$sci_path."';";
       $sh_cmd .= "export SCI_GRAPH_PATH='".$sci_graph_path."';";
       $sh_cmd .= "./auto.sh ".$book_path." ".$book_id.";";
-      $bash_output = shell_exec(sh_cmd);
-      echo $bash_output;
+      $bash_output = shell_exec($sh_cmd);
+#      var_dump($bash_output);
+#      die;
     }
     /**
      *Sending mail to user about Submission Locking
