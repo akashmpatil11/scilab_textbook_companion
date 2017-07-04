@@ -479,7 +479,7 @@ function all_example_submitted_check_form_validate($form, &$form_state) {
  *If error occurs send mail to user and keep submited_all_examples_code = 0
  *If no error found lock the book, submited_all_examples_code = 1, and mail to user, cc, bcc
  */
-function all_example_submitted_check_form_submit($form, &$form_state, $preference_id) {
+function all_example_submitted_check_form_submit($form, &$form_state) {
   global $user;
   if ($form_state['values']['all_example_submitted'] == 1) {
     db_query('UPDATE {textbook_companion_preference} SET submited_all_examples_code = 0  WHERE id = :preference_id', array(
@@ -508,7 +508,7 @@ function all_example_submitted_check_form_submit($form, &$form_state, $preferenc
     $scihome = $auto_check_path.'scilab/';
     $sci_path = $scihome.'bin/scilab-cli';
     $sci_graph_path = $auto_check_path . $book_id . '/tbc_graphs';
-    if(file_exists($scipath)){
+    if(file_exists($sci_path)){
 #     drupal_set_message('Code will check'
       copy('./bash/auto.sh', $auto_check_path.'auto.sh');
       chdir($auto_check_path);
@@ -519,10 +519,9 @@ function all_example_submitted_check_form_submit($form, &$form_state, $preferenc
       $sh_cmd = "export SCIHOME='".$scihome."';";
       $sh_cmd .= "export SCI_PATH='".$sci_path."';";
       $sh_cmd .= "export SCI_GRAPH_PATH='".$sci_graph_path."';";
-      $sh_cmd .= "./auto.sh ".$book_path." ".$book_id";";
+      $sh_cmd .= "./auto.sh ".$book_path." ".$book_id.";";
       $bash_output = shell_exec(sh_cmd);
-      var_dump($bash_output);
-      die;
+      echo $bash_output;
     }
     /**
      *Sending mail to user about Submission Locking
