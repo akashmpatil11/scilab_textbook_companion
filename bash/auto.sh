@@ -133,7 +133,8 @@ function scan_sce_for_errors {
 			sed -i 's/clf;//g' ${sce_file}
 			
 			# run command
-			OUTPUT=`scilab-cli -nb -nwni -f ${sce_file}`;
+#			OUTPUT=`scilab-cli -nb -nwni -f ${sce_file}`;
+			OUTPUT=`${SCI_PATH} -nb -nwni -f ${sce_file}`;
 # 			OUTPUT=$(${SCIHOME}/bin/scilab-cli -nb -nwni -f ${sce_file});
 			echo "<br />"
 			echo $OUTPUT
@@ -160,7 +161,8 @@ function scan_sce_for_errors {
 # 			sed -i 's/close;//g' ${sce_file}
 # 			sed -i 's/clf;//g' ${sce_file}
 			# run command
-			OUTPUT=`scilab-cli -f ${sce_file}`;
+#			OUTPUT=`scilab-cli -f ${sce_file}`;
+			OUTPUT=`${SCI_PATH} -f ${sce_file}`;
 			echo "<br />"
 			echo ${OUTPUT}
 			if [[ "${OUTPUT}" =~ "error" ]];
