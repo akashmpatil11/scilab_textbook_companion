@@ -420,55 +420,17 @@ function book_approval_form($form, &$form_state) {
   );
   return $form;
 }
-function book_approval_form_submit($form, &$form_state) {
-  $preference_id = $form_state['values']['book_id'];
-  $query = db_update('textbook_companion_preference');
-  $query->fields(array(
-    'book_status' => $form_state['values']['book_status_']
-  ));
-  $query->condition('id', $preference_id);
-  $updated = $query->execute();
-  /**
-   *Email for updating book status
-   */
-  $query = db_select('textbook_companion_proposal');
-  $query->fields('textbook_companion_proposal');
-  $query->condition('id', $updated->propasal_id);
-  $result = $query->execute();
-  $proposal_data = $result->fetchObject();
-  $book_user = user_load($proposal_data->uid);
-  $email_to = $book_user->mail;
-  $from = variable_get('textbook_companion_from_email', '');
-  $bcc = variable_get('textbook_companion_emails', '');
-  $cc = variable_get('textbook_companion_cc_emails', '');
-  $params['book_status_updated']['preference_id'] = $preference_id;
-  $params['book_status_updated']['user_id'] = $proposal_data->uid;
-  $params['book_status_updated']['headers'] = array(
-    'From' => $from,
-    'MIME-Version' => '1.0',
-    'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
-    'Content-Transfer-Encoding' => '8Bit',
-    'X-Mailer' => 'Drupal',
-    'Cc' => $cc,
-    'Bcc' => $bcc
-  );
-  if (!drupal_mail('textbook_companion', 'book_status_updated', $email_to, language_default(), $params, $from, TRUE))
-    drupal_set_message('Error sending email message.', 'error');
-  drupal_set_message('Book Status has been Changed. User has been notified.', 'status');
-  drupal_goto('manage_books');
-  return;
-}
 /******************************************************************************/
 /*************************** BOOK STATUS FORM *****************************/
 /******************************************************************************/
 function book_status_form($form, &$form_state) {
   global $user;
   /* get current book */
-  $book_id = arg(2);
+  $preference_id = arg(2);
   /*$result = db_query("SELECT * FROM {textbook_companion_proposal} WHERE proposal_status = 0 and id = %d", $proposal_id);*/
   $query = db_select('textbook_companion_preference');
   $query->fields('textbook_companion_preference');
-  $query->condition('id', $book_id);
+  $query->condition('id', $preference_id);
   $result = $query->execute();
   if ($result) {
     if ($book_data = $result->fetchObject()) {
@@ -662,9 +624,13 @@ function book_status_form($form, &$form_state) {
     '#type' => 'hidden',
     '#value' => $book_data->proposal_id
   );
-  $form['book_id'] = array(
+  $form['preference_id'] = array(
     '#type' => 'hidden',
     '#value' => $book_data->id
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
   );
   $form['cancel'] = array(
     '#type' => 'markup',
@@ -672,7 +638,44 @@ function book_status_form($form, &$form_state) {
   );
   return $form;
 }
-
+function book_status_form_submit($form, &$form_state) {
+  $preference_id = $form_state['values']['preference_id'];
+  $query = db_update('textbook_companion_preference');
+  $query->fields(array(
+    'book_status' => $form_state['values']['book_status_']
+  ));
+  $query->condition('id', $preference_id);
+  $updated = $query->execute();
+  /**
+   *Email for updating book status
+   */
+  $query = db_select('textbook_companion_proposal');
+  $query->fields('textbook_companion_proposal');
+  $query->condition('id', $updated->propasal_id);
+  $result = $query->execute();
+  $proposal_data = $result->fetchObject();
+  $book_user = user_load($proposal_data->uid);
+  $email_to = $book_user->mail;
+  $from = variable_get('textbook_companion_from_email', '');
+  $bcc = variable_get('textbook_companion_emails', '');
+  $cc = variable_get('textbook_companion_cc_emails', '');
+  $params['book_status_updated']['preference_id'] = $preference_id;
+  $params['book_status_updated']['user_id'] = $proposal_data->uid;
+  $params['book_status_updated']['headers'] = array(
+    'From' => $from,
+    'MIME-Version' => '1.0',
+    'Content-Type' => 'text/plain; charset=UTF-8; format=flowed; delsp=yes',
+    'Content-Transfer-Encoding' => '8Bit',
+    'X-Mailer' => 'Drupal',
+    'Cc' => $cc,
+    'Bcc' => $bcc
+  );
+  if (!drupal_mail('textbook_companion', 'book_status_updated', $email_to, language_default(), $params, $from, TRUE))
+    drupal_set_message('Error sending email message.', 'error');
+  drupal_set_message('Book Status has been Changed. User has been notified.', 'status');
+  drupal_goto('manage_books');
+  return;
+}
 /******************************************************************************/
 /**************************** BOOK EDIT FORM ******************************/
 /******************************************************************************/

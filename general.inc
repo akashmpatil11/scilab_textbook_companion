@@ -482,25 +482,20 @@ function all_example_submitted_check_form_validate($form, &$form_state) {
 function all_example_submitted_check_form_submit($form, &$form_state, $preference_id) {
   global $user;
   if ($form_state['values']['all_example_submitted'] == 1) {
-    db_query('UPDATE {textbook_companion_preference} SET submited_all_examples_code = 0  WHERE id = :preference_id', array(
+    db_query('UPDATE {textbook_companion_preference} SET submited_all_examples_code = 1  WHERE id = :preference_id', array(
       ':preference_id' => $form_state['values']['preference_id']
     ));
     /**
      *Executing bash script to check errors in uploaded examples
      *If errors are there, send mail to user and halt locking procedure
      */
-    $root_path = textbook_companion_path();
-    $book_id = $form_state['values']['preference_id'];
-    //$book_id = 3839;
-    $book_path = $root_path . $book_id;
-    //var_dump($root_path."auto_check/");die;
-    chdir($root_path . "auto_check");
-    exec("chmod u+x ./auto.sh");
-    $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
-    //exec("chmod -R 777"." ".$book_path);
-    $return = shell_exec($sh_command);
-    var_dump($return);
-    die;
+    // $root_path = textbook_companion_path();
+    // $book_id = $form_state['values']['preference_id'];
+    // $book_path = $root_path . $book_id;
+    // chdir($root_path . "auto_check");
+    // exec("chmod u+x ./auto.sh");
+    // $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
+    // $return = shell_exec($sh_command);
     /**
      *Sending mail to user about Submission Locking
      */
