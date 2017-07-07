@@ -87,7 +87,7 @@ function scan_sce_for_errors {
 	
 	# make directory for storing graphs(each dir will be named after a book)
 # 	mkdir -p ${SCI_GRAPH_PATH}/${ZIPFILE_NAME}
-	( umask 000 && mkdir -p ${SCI_GRAPH_PATH}/${ZIPFILE_NAME} )
+	( umask 000 && mkdir -p ${SCI_GRAPH_PATH} )
 # 	chmod 777 ${SCI_GRAPH_PATH}/${ZIPFILE_NAME}
 	
 	for sce_file in ${SCE_FILE_LIST};
@@ -154,12 +154,13 @@ function scan_sce_for_errors {
 # 			echo "" >> ${sce_file}
 			BASE_FILE_NAME=$(basename ${sce_file} .sce)
 			# change path for storing graph image file
-			echo "xinit('${SCI_GRAPH_PATH}/${ZIPFILE}/${BASE_FILE_NAME}');xend();exit();" >> ${sce_file} 
-# 			sed -i '1s/^/mode(2);errcatch(-1,"stop");driver("GIF");/' ${sce_file}
-# 			sed -i 's/xdel(winsid());//g' ${sce_file}
-# 			sed -i 's/clc()//g' ${sce_file}
-# 			sed -i 's/close;//g' ${sce_file}
-# 			sed -i 's/clf;//g' ${sce_file}
+			echo -e "<br/>${SCI_GRAPH_PATH}/${BASE_FILE_NAME}<br />"
+			echo -e "\nxinit('${SCI_GRAPH_PATH}/${BASE_FILE_NAME}');xend();exit();" >> ${sce_file} 
+ 			sed -i '1s/^/mode(2);errcatch(-1,"stop");driver("GIF");/' ${sce_file}
+ 			sed -i 's/xdel(winsid());//g' ${sce_file}
+ 			sed -i 's/clc()//g' ${sce_file}
+ 			sed -i 's/close;//g' ${sce_file}
+ 			sed -i 's/clf;//g' ${sce_file}
 			# run command
 #			OUTPUT=`scilab-cli -f ${sce_file}`;
 			OUTPUT=`${SCI_PATH} -f ${sce_file}`;

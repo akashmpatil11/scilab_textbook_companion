@@ -506,8 +506,8 @@ function all_example_submitted_check_form_submit($form, &$form_state) {
     $book_path = $root_path . $book_id;
     $auto_check_path = $root_path.'auto_check/';
     $scihome = $auto_check_path.'scilab/';
-    $sci_path = $scihome.'bin/scilab-cli';
-    $sci_graph_path = $auto_check_path . $book_id . '/tbc_graphs';
+    $sci_path = $scihome.'bin/scilab-adv-cli';
+    $sci_graph_path = $auto_check_path . $book_id .'/graph';
     if(file_exists($sci_path)){
 #     drupal_set_message('Code will check'
       $module_path = drupal_get_path("module", "textbook_companion");
