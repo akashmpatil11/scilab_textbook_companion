@@ -479,7 +479,7 @@ function all_example_submitted_check_form_validate($form, &$form_state) {
  *If error occurs send mail to user and keep submited_all_examples_code = 0
  *If no error found lock the book, submited_all_examples_code = 1, and mail to user, cc, bcc
  */
-function all_example_submitted_check_form_submit($form, &$form_state) {
+function all_example_submitted_check_form_submit($form, &$form_state, $preference_id) {
   global $user;
   if ($form_state['values']['all_example_submitted'] == 1) {
     db_query('UPDATE {textbook_companion_preference} SET submited_all_examples_code = 0  WHERE id = :preference_id', array(
@@ -489,42 +489,18 @@ function all_example_submitted_check_form_submit($form, &$form_state) {
      *Executing bash script to check errors in uploaded examples
      *If errors are there, send mail to user and halt locking procedure
      */
-#    $root_path = textbook_companion_path();
-#    $book_id = $form_state['values']['preference_id'];
-#    //$book_id = 3839;
-#    $book_path = $root_path . $book_id;
-#    //var_dump($root_path."auto_check/");die;
-#    chdir($root_path . "auto_check");
-#    exec("chmod u+x ./auto.sh");
-#    $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
-#    //exec("chmod -R 777"." ".$book_path);
-#    $return = shell_exec($sh_command);
-#    var_dump($return);
-#    die;
     $root_path = textbook_companion_path();
     $book_id = $form_state['values']['preference_id'];
+    //$book_id = 3839;
     $book_path = $root_path . $book_id;
-    $auto_check_path = $root_path.'auto_check/';
-    $scihome = $auto_check_path.'scilab/';
-    $sci_path = $scihome.'bin/scilab-adv-cli';
-    $sci_graph_path = $auto_check_path . $book_id .'/graph';
-    if(file_exists($sci_path)){
-#     drupal_set_message('Code will check'
-      $module_path = drupal_get_path("module", "textbook_companion");
-      copy($module_path.'/bash/auto.sh', $auto_check_path.'auto.sh');
-      chdir($auto_check_path);
-      exec('chmod u+x ./auto.sh');
-      if(file_exists($auto_check_path.$book_id)){
-        exec('rm -rf '.$book_id);  
-      }
-      $sh_cmd = "export SCIHOME='".$scihome."';";
-      $sh_cmd .= "export SCI_PATH='".$sci_path."';";
-      $sh_cmd .= "export SCI_GRAPH_PATH='".$sci_graph_path."';";
-      $sh_cmd .= "./auto.sh ".$book_path." ".$book_id.";";
-      $bash_output = shell_exec($sh_cmd);
-#      var_dump($bash_output);
-#      die;
-    }
+    //var_dump($root_path."auto_check/");die;
+    chdir($root_path . "auto_check");
+    exec("chmod u+x ./auto.sh");
+    $sh_command = "./auto.sh" . " " . $book_path . " " . $book_id;
+    //exec("chmod -R 777"." ".$book_path);
+    $return = shell_exec($sh_command);
+    var_dump($return);
+    die;
     /**
      *Sending mail to user about Submission Locking
      */
